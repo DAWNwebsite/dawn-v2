@@ -1,0 +1,425 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.5rem;
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+
+  /* DAWN AI Study Brand Colors */
+  --dawn-purple: 262 83% 58%;
+  --dawn-purple-light: 262 83% 88%;
+  --dawn-purple-dark: 262 83% 28%;
+  --dawn-blue: 213 94% 68%;
+  --dawn-blue-light: 213 94% 88%;
+  --dawn-green: 142 76% 36%;
+  --dawn-green-light: 142 76% 86%;
+  --dawn-orange: 25 95% 53%;
+  --dawn-orange-light: 25 95% 83%;
+
+  /* Neurodivergent-Friendly Colors */
+  --calm-blue: 210 100% 95%;
+  --focus-yellow: 48 100% 88%;
+  --success-green: 120 100% 90%;
+  --warning-orange: 39 100% 90%;
+  --error-red: 0 100% 92%;
+  
+  /* Cognitive Load Colors */
+  --low-cognitive: 120 30% 97%;
+  --medium-cognitive: 48 30% 97%;
+  --high-cognitive: 0 30% 97%;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+}
+
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 95%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 20%;
+  --accent: 0 0% 95%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 100% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 0%;
+  --input: 0 0% 95%;
+  --ring: 0 0% 0%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Font Size Classes */
+.font-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.font-medium {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.font-large {
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.font-extra-large {
+  font-size: 1.25rem;
+  line-height: 1.8;
+}
+
+/* Dyslexia-Friendly Typography */
+.dyslexia-friendly {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif;
+  letter-spacing: 0.05em;
+  word-spacing: 0.16em;
+  line-height: 1.8;
+}
+
+.dyslexia-friendly h1,
+.dyslexia-friendly h2,
+.dyslexia-friendly h3,
+.dyslexia-friendly h4,
+.dyslexia-friendly h5,
+.dyslexia-friendly h6 {
+  font-weight: 600;
+  margin-bottom: 0.75em;
+}
+
+/* ADHD-Friendly Styles */
+.adhd-friendly {
+  --animation-duration: 0.1s;
+}
+
+.adhd-friendly .card {
+  border: 2px solid hsl(var(--border));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.adhd-friendly .focus-zone {
+  background: linear-gradient(135deg, hsl(var(--calm-blue)) 0%, hsl(var(--focus-yellow)) 100%);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+}
+
+/* Reduced Motion */
+.reduce-motion,
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Enhanced Focus Indicators */
+.focus-indicators *:focus {
+  outline: 3px solid hsl(var(--dawn-purple));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.high-contrast *:focus {
+  outline: 4px solid #000;
+  outline-offset: 2px;
+}
+
+/* Screen Reader Mode */
+.screen-reader-mode .sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0.25rem 0.5rem;
+  margin: 0.25rem;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+}
+
+/* Color Blindness Filters */
+.protanopia {
+  filter: url('#protanopia-filter');
+}
+
+.deuteranopia {
+  filter: url('#deuteranopia-filter');
+}
+
+.tritanopia {
+  filter: url('#tritanopia-filter');
+}
+
+/* Cognitive Load Indicators */
+.cognitive-low {
+  background-color: hsl(var(--low-cognitive));
+  border-left: 4px solid hsl(var(--dawn-green));
+}
+
+.cognitive-medium {
+  background-color: hsl(var(--medium-cognitive));
+  border-left: 4px solid hsl(var(--dawn-orange));
+}
+
+.cognitive-high {
+  background-color: hsl(var(--high-cognitive));
+  border-left: 4px solid hsl(var(--destructive));
+}
+
+/* Sensory-Friendly Animations */
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.gentle-animation {
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+.reduce-motion .gentle-animation {
+  animation: none;
+}
+
+/* Utility Classes for Neurodivergent Design */
+.minimal-distraction {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  box-shadow: none;
+}
+
+.clear-hierarchy h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; }
+.clear-hierarchy h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+.clear-hierarchy h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+.reading-guide {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    hsl(var(--focus-yellow)) 25%,
+    hsl(var(--focus-yellow)) 75%,
+    transparent 100%
+  );
+  height: 1.5em;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.reading-guide.active {
+  opacity: 0.6;
+}
+
+/* Progress Indicators */
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.35s;
+  transform-origin: 50% 50%;
+}
+
+/* Accessible Form Styles */
+.form-field {
+  margin-bottom: 1.5rem;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid hsl(var(--border));
+  border-radius: 6px;
+  font-size: 1rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: border-color 0.2s ease;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: hsl(var(--dawn-purple));
+  box-shadow: 0 0 0 3px hsl(var(--dawn-purple) / 0.1);
+}
+
+.high-contrast .form-field input:focus,
+.high-contrast .form-field textarea:focus,
+.high-contrast .form-field select:focus {
+  border-color: #000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--accent)) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.reduce-motion .loading-skeleton {
+  animation: none;
+  background: hsl(var(--muted));
+}
+
+/* Responsive Design for Accessibility */
+@media (max-width: 768px) {
+  .font-small { font-size: 1rem; }
+  .font-medium { font-size: 1.125rem; }
+  .font-large { font-size: 1.25rem; }
+  .font-extra-large { font-size: 1.375rem; }
+}
+
+/* Print Styles */
+@media print {
+  .no-print { display: none !important; }
+  
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .card {
+    border: 1px solid #000 !important;
+    page-break-inside: avoid;
+  }
+}
+
+.container-div {
+  @apply flex lg:flex-row flex-col lg:p-4 px-4 justify-between  w-full mx-auto container;
+}
+
+.glassmorphism {
+  @apply border border-t-0  border-gray-200 bg-white/20 shadow-[inset_10px_-50px_94px_0_rgb(199,199,199,0.2)] backdrop-blur;
+}
+
+.main {
+  width: 100vw;
+  min-height: 100vh;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  padding: 120px 24px 160px 24px;
+  pointer-events: none;
+}
+
+.gradient {
+  height: fit-content;
+  z-index: 3;
+  width: 100%;
+  max-width: 640px;
+  background-image: radial-gradient(
+      at 27% 37%,
+      hsla(0, 0%, 0%, 1),
+      transparent 0%
+    ),
+    radial-gradient(at 97% 21%, hsla(187, 100%, 44%, 1), transparent 50%),
+    radial-gradient(at 52% 99%, hsla(204, 97%, 54%, 1), transparent 50%),
+    radial-gradient(at 10% 29%, hsla(0, 0%, 50%, 1), transparent 50%),
+    radial-gradient(at 97% 96%, hsla(249, 100%, 74%, 0.39), transparent 50%),
+    radial-gradient(at 33% 50%, hsla(291, 100%, 43%, 1), transparent 50%),
+    radial-gradient(at 79% 53%, hsla(292, 100%, 43%, 1), transparent 50%);
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 100%;
+  filter: blur(100px) saturate(150%);
+  top: 80px;
+  opacity: 0.15;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}

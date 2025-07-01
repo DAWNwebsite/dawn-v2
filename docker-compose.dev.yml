@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: dawn-postgres-dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dawn_lms_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-dawn_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dawn_password}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - dawn-dev-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: dawn-redis-dev
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_dev_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - dawn-dev-network
+
+  # Go Backend API (Development)
+  backend:
+    build:
+      context: ./backend/dawn-lms
+      dockerfile: Dockerfile.dev
+    container_name: dawn-backend-dev
+    environment:
+      - PORT=8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER:-dawn_user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-dawn_password}
+      - DB_NAME=${POSTGRES_DB:-dawn_lms_dev}
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret}
+      - GIN_MODE=debug
+    volumes:
+      - ./backend/dawn-lms:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - dawn-dev-network
+    restart: unless-stopped
+
+  # Next.js Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: dawn-frontend-dev
+    environment:
+      - NODE_ENV=development
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-dev-nextauth-secret}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-dawn_user}:${POSTGRES_PASSWORD:-dawn_password}@postgres:5432/${POSTGRES_DB:-dawn_lms_dev}
+      - REDIS_URL=redis://redis:6379
+      - API_BASE_URL=http://backend:8080
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
+      - PINECONE_INDEX=${PINECONE_INDEX}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    networks:
+      - dawn-dev-network
+    restart: unless-stopped
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  dawn-dev-network:
+    driver: bridge 

@@ -1,0 +1,328 @@
+/* Dawn AI Accessibility Styles */
+
+/* Font Size Variations */
+.font-small {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.font-medium {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.font-large {
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.font-extra-large {
+  font-size: 1.25rem;
+  line-height: 1.8;
+}
+
+/* Dyslexia-Friendly Font */
+.dyslexia-friendly {
+  font-family: 'OpenDyslexic', Arial, sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+}
+
+.dyslexia-friendly h1,
+.dyslexia-friendly h2,
+.dyslexia-friendly h3,
+.dyslexia-friendly h4,
+.dyslexia-friendly h5,
+.dyslexia-friendly h6 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.dyslexia-friendly p {
+  margin-bottom: 1.5rem;
+  max-width: 70ch;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --border: 0 0% 0%;
+  --input: 0 0% 100%;
+  --ring: 0 0% 0%;
+}
+
+.high-contrast * {
+  border-color: #000000 !important;
+}
+
+.high-contrast button,
+.high-contrast [role="button"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast button:hover,
+.high-contrast [role="button"]:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast a {
+  color: #0000ff !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast a:visited {
+  color: #800080 !important;
+}
+
+/* Reduced Motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ADHD-Friendly Styles */
+.adhd-friendly {
+  --animation-duration: 60s; /* Slower animations */
+}
+
+.adhd-friendly * {
+  /* Reduced visual noise */
+  box-shadow: none !important;
+}
+
+.adhd-friendly .moving-element {
+  animation-play-state: paused !important;
+}
+
+.adhd-friendly .distracting-element {
+  opacity: 0.7;
+  filter: grayscale(0.3);
+}
+
+/* Focus Management */
+.focus-visible:focus-visible {
+  outline: 3px solid #a855f7;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Screen Reader Optimizations */
+.screen-reader-mode .decorative {
+  display: none !important;
+}
+
+.screen-reader-mode .content {
+  max-width: none !important;
+  padding: 1rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0.5rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background-color: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  z-index: 9999;
+}
+
+/* Color Blindness Support */
+.protanopia {
+  filter: url('#protanopia-filter');
+}
+
+.deuteranopia {
+  filter: url('#deuteranopia-filter');
+}
+
+.tritanopia {
+  filter: url('#tritanopia-filter');
+}
+
+/* Touch Target Improvements */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+a[href] {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem;
+}
+
+/* Keyboard Navigation */
+.keyboard-navigation *:focus {
+  outline: 3px solid #a855f7;
+  outline-offset: 2px;
+}
+
+.keyboard-navigation button:focus,
+.keyboard-navigation [role="button"]:focus {
+  background-color: #a855f7;
+  color: white;
+}
+
+/* Skip Links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 10000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.reduce-motion .loading-skeleton {
+  background: #f0f0f0;
+  animation: none;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Error States */
+.error-message {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin: 0.5rem 0;
+}
+
+.high-contrast .error-message {
+  color: #000000 !important;
+  background-color: #ffff00 !important;
+  border-color: #000000 !important;
+}
+
+/* Success States */
+.success-message {
+  color: #065f46;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin: 0.5rem 0;
+}
+
+.high-contrast .success-message {
+  color: #000000 !important;
+  background-color: #00ff00 !important;
+  border-color: #000000 !important;
+}
+
+/* Form Improvements */
+label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+input:invalid {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 1px #dc2626;
+}
+
+input:valid {
+  border-color: #10b981;
+}
+
+.high-contrast input:invalid {
+  border-color: #000000 !important;
+  background-color: #ffff00 !important;
+}
+
+.high-contrast input:valid {
+  border-color: #000000 !important;
+  background-color: #00ff00 !important;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+} 
