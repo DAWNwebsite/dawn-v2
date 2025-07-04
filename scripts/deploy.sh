@@ -100,13 +100,33 @@ setup_ssl() {
 init_database() {
     print_status "Initializing database..."
     
-    # Create database initialization script
+    # Create database initialization script for PostgreSQL
     cat > scripts/init-db.sql << EOF
--- DAWN LMS Database Initialization
-CREATE DATABASE IF NOT EXISTS dawn_lms;
-CREATE USER IF NOT EXISTS 'dawn_user'@'%' IDENTIFIED BY 'dawn_password';
-GRANT ALL PRIVILEGES ON dawn_lms.* TO 'dawn_user'@'%';
-FLUSH PRIVILEGES;
+-- DAWN LMS Database Initialization for PostgreSQL
+-- This script will be run by the PostgreSQL container on startup
+
+-- Create the database (PostgreSQL creates it automatically if it doesn't exist)
+-- The database name is set via POSTGRES_DB environment variable
+
+-- Create the user if it doesn't exist
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'dawn_user') THEN
+        CREATE USER dawn_user WITH PASSWORD 'dawn_password';
+    END IF;
+END
+\$\$;
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE dawn_lms TO dawn_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO dawn_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO dawn_user;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO dawn_user;
+
+-- Set default privileges for future objects
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO dawn_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO dawn_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO dawn_user;
 EOF
     
     print_status "Database initialization script created ✅"
