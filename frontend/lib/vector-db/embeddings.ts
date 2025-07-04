@@ -1,25 +1,24 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 
-// Global OpenAI client instance
-let openaiClient: OpenAI | null = null;
+let embeddingsClient: GoogleGenerativeAIEmbeddings | null = null;
 
 /**
- * Initialize and return the OpenAI client
+ * Initialize and return the Google Generative AI Embeddings client
  */
-function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
-    const apiKey = process.env.OPENAI_API_KEY;
+function getEmbeddingsClient(): GoogleGenerativeAIEmbeddings {
+  if (!embeddingsClient) {
+    const apiKey = process.env.GOOGLE_API_KEY;
     
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is required');
+      throw new Error('GOOGLE_API_KEY environment variable is required');
     }
 
-    openaiClient = new OpenAI({
+    embeddingsClient = new GoogleGenerativeAIEmbeddings({
       apiKey: apiKey,
+      model: "text-embedding-004", // The latest and recommended model
     });
   }
-
-  return openaiClient;
+  return embeddingsClient;
 }
 
 /**
@@ -27,18 +26,8 @@ function getOpenAIClient(): OpenAI {
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    const client = getOpenAIClient();
-    
-    const response = await client.embeddings.create({
-      model: 'text-embedding-ada-002',
-      input: text.replace(/\n/g, ' '), // Clean newlines
-    });
-
-    if (!response.data || response.data.length === 0) {
-      throw new Error('No embedding data received from OpenAI');
-    }
-
-    return response.data[0].embedding;
+    const client = getEmbeddingsClient();
+    return await client.embedQuery(text);
   } catch (error) {
     console.error('Error generating embedding:', error);
     throw error;
@@ -50,21 +39,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
  */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   try {
-    const client = getOpenAIClient();
-    
-    // Clean the texts
-    const cleanedTexts = texts.map(text => text.replace(/\n/g, ' '));
-    
-    const response = await client.embeddings.create({
-      model: 'text-embedding-ada-002',
-      input: cleanedTexts,
-    });
-
-    if (!response.data || response.data.length !== texts.length) {
-      throw new Error('Mismatch in embedding response length');
-    }
-
-    return response.data.map(item => item.embedding);
+    const client = getEmbeddingsClient();
+    return await client.embedDocuments(texts);
   } catch (error) {
     console.error('Error generating embeddings:', error);
     throw error;
@@ -114,12 +90,13 @@ export async function generateQueryEmbedding(
 }
 
 /**
- * Test the OpenAI embeddings API
+ * Test the Google embedding service
  */
 export async function testEmbeddingService(): Promise<boolean> {
   try {
     const testEmbedding = await generateEmbedding('This is a test sentence for embedding.');
-    return Array.isArray(testEmbedding) && testEmbedding.length === 1536; // ada-002 dimension
+    // text-embedding-004 has a dimension of 768
+    return Array.isArray(testEmbedding) && testEmbedding.length === 768; 
   } catch (error) {
     console.error('Embedding service test failed:', error);
     return false;

@@ -1,20 +1,14 @@
-import { OpenAI } from 'openai';
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { Document } from 'langchain/document';
 import { PineconeStore } from '@langchain/community/vectorstores/pinecone';
-import { OpenAIEmbeddings } from '@langchain/openai';
 import { pineconeClient } from './pinecone';
 import { ContentType, DocumentMetadata, IngestionResult } from './types';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 // Initialize embeddings
-const embeddings = new OpenAIEmbeddings({
-  openAIApiKey: process.env.OPENAI_API_KEY,
-  modelName: 'text-embedding-3-small', // Cost-effective option
+const embeddings = new GoogleGenerativeAIEmbeddings({
+  apiKey: process.env.GOOGLE_API_KEY,
+  model: "text-embedding-004",
 });
 
 // Text splitter configuration

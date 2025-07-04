@@ -1,6 +1,6 @@
-import { OpenAI } from 'openai';
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { ChatGroq } from "@langchain/groq";
 import { PineconeStore } from '@langchain/community/vectorstores/pinecone';
-import { OpenAIEmbeddings } from '@langchain/openai';
 import { pineconeClient } from './pinecone';
 import { 
   SearchQuery, 
@@ -10,15 +10,16 @@ import {
   UserContext 
 } from './types';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+// Initialize Groq chat client
+const chatClient = new ChatGroq({
+  apiKey: process.env.GROQ_API_KEY,
+  model: "llama3-8b-8192", // A good, fast model for RAG
 });
 
-// Initialize embeddings
-const embeddings = new OpenAIEmbeddings({
-  openAIApiKey: process.env.OPENAI_API_KEY,
-  modelName: 'text-embedding-3-small',
+// Initialize embeddings using our centralized function
+const embeddings = new GoogleGenerativeAIEmbeddings({
+  apiKey: process.env.GOOGLE_API_KEY,
+  model: "text-embedding-004",
 });
 
 /**
@@ -172,24 +173,13 @@ export class RAGSearchEngine {
       // Build context from search results
       const context = this.buildRAGContext(query, searchResults, userContext);
 
-      // Generate response using OpenAI
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini', // Cost-effective option
-        messages: [
-          {
-            role: 'system',
-            content: this.buildSystemPrompt(userContext),
-          },
-          {
-            role: 'user',
-            content: this.buildUserPrompt(context),
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      });
+      // Generate response using Groq
+      const completion = await chatClient.invoke([
+        ['system', this.buildSystemPrompt(userContext)],
+        ['human', this.buildUserPrompt(context)],
+      ]);
 
-      const answer = completion.choices[0]?.message?.content || 'No response generated';
+      const answer = completion.content as string || 'No response generated';
 
       // Calculate confidence based on search results relevance
       const confidence = this.calculateConfidence(searchResults);
