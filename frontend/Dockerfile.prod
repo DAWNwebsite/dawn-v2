@@ -20,11 +20,19 @@ WORKDIR /app
 COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
+# Set build-time environment variables with defaults
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV NEXT_PUBLIC_URL=http://localhost:3000
+ENV DATABASE_URL=postgresql://dawn_user:dawn_password@postgres:5432/dawn_lms
+ENV REDIS_URL=redis://redis:6379
+ENV API_BASE_URL=http://backend:8080
+
 # Generate Prisma client
 RUN npx prisma generate
 
 # Build the application
-ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 # Production stage
