@@ -68,6 +68,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+        - PINECONE_API_KEY=${PINECONE_API_KEY}
+        - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
+        - PINECONE_INDEX=${PINECONE_INDEX}
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
+        - REDIS_PASSWORD=${REDIS_PASSWORD:-dawn_redis_pass}
     container_name: dawn-frontend
     environment:
       - NODE_ENV=production
