@@ -30,12 +30,12 @@ class RedisPubSubService {
     this.publisher = getRedisClient();
     
     // Create separate subscriber instance (Redis requirement)
-    this.subscriber = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD,
-      db: parseInt(process.env.REDIS_DB || '0', 10),
-      retryDelayOnFailover: 100,
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    this.subscriber = new Redis(redisUrl, {
+      retryStrategy(times) {
+        const delay = Math.min(times * 100, 2000);
+        return delay;
+      },
       enableReadyCheck: true,
       maxRetriesPerRequest: 3,
       lazyConnect: true,
