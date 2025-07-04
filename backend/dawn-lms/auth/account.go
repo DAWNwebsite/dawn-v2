@@ -81,12 +81,12 @@ func SignUp(c *gin.Context) {
 	SignupInput := SignUpInfo{}
 	erro := c.BindJSON(&SignupInput)
 	if erro != nil {
-		c.JSON(http.StatusBadRequest, erro.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": erro.Error()})
 		return
 	}
 	hashed, err := utils.HashPassword(SignupInput.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	newAccount := models.User{
@@ -100,7 +100,7 @@ func SignUp(c *gin.Context) {
 
 	err = DB.Create(&newAccount).Error
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, newAccount)
@@ -111,7 +111,7 @@ func Login(c *gin.Context) {
 	logInput := LoginInput{}
 	erro := c.BindJSON(&logInput)
 	if erro != nil {
-		c.JSON(http.StatusBadRequest, erro.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": erro.Error()})
 		return
 	}
 	email := logInput.Email
@@ -119,12 +119,12 @@ func Login(c *gin.Context) {
 
 	err := DB.Where("Email = ?", email).First(&user).Error
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, err.Error())
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 	isPasswordValid, erro := utils.ComparePassword(password, user.Password)
-	if !isPasswordValid && erro != nil {
-		c.JSON(http.StatusUnauthorized, erro.Error())
+	if !isPasswordValid || erro != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 	claims := map[string]any{
