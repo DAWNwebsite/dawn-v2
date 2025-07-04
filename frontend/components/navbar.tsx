@@ -61,7 +61,7 @@ function Navbar() {
             aria-label="DAWN AI Study - Home"
           >
             <Image
-              className="dark:invert"
+              className=""
               src={process.env.NEXT_PUBLIC_DAWN_LOGO || "/images/logo.jpg"}
               alt="Dawn AI Study Logo"
               width={128}
@@ -70,17 +70,15 @@ function Navbar() {
             />
           </Link>
           
-          {/* Desktop Navigation */}
-          <div className="hidden space-x-8 lg:flex md:flex lg:space-x-8 md:space-x-5">
-            <ul className="flex space-x-8 lg:space-x-8 md:space-x-2" role="menubar">
+          {/* Combined Desktop Navigation and Actions */}
+          <div className="hidden md:flex items-center space-x-6">
+            {/* Desktop Navigation */}
+            <ul className="flex items-center space-x-3 lg:space-x-4" role="menubar">
               {navigation.map((item) => (
                 <li key={item.name} role="none">
                   <Link
                     href={item.href || ""}
-                    className="text-base leading-normal hover:text-accent-500 font-normal 
-                    hover:text-[#620074] hover:font-medium hover:transition-all hover:ease-in-out 
-                    hover:duration-300 md:text-[12px] lg:text-base focus:outline-none focus:ring-2 
-                    focus:ring-purple-600 focus:ring-offset-2 rounded-lg px-2 py-1"
+                    className="text-sm lg:text-base leading-normal font-normal hover:text-[#620074] hover:font-medium transition-all ease-in-out duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg px-2 py-1"
                     role="menuitem"
                   >
                     {item.name}
@@ -88,38 +86,38 @@ function Navbar() {
                 </li>
               ))}
             </ul>
-          </div>
-          
-          {/* Desktop Actions */}
-          <div className="hidden lg:flex md:flex items-center space-x-4">
-            {/* Accessibility Toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAccessibilityOpen(true)}
-              className="flex items-center space-x-1 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-              aria-label="Open accessibility settings"
-              title="Accessibility Settings"
-            >
-              <Settings className="w-4 h-4" />
-              <span className="sr-only">Accessibility</span>
-            </Button>
             
-            <Button
-              className="bg-white text-[#620074] border-[#620074] border-2 rounded-full hover:text-white
-              hover:transition-all hover:ease-in-out hover:duration-300 hover:delay-100 hover:bg-[#620074]
-              focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-              asChild
-            >
-              <Link href="/auth/signin">Login</Link>
-            </Button>
-            <Button 
-              className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
-              focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-              asChild
-            >
-              <Link href="/auth/signup">Join For Free</Link>
-            </Button>
+            {/* Desktop Actions */}
+            <div className="flex items-center space-x-3">
+              {/* Accessibility Toggle */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAccessibilityOpen(true)}
+                className="flex items-center space-x-1 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+                aria-label="Open accessibility settings"
+                title="Accessibility Settings"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="sr-only">Accessibility</span>
+              </Button>
+              
+              <Button
+                className="bg-white text-[#620074] border-[#620074] border-2 rounded-full hover:text-white
+                hover:transition-all hover:ease-in-out hover:duration-300 hover:delay-100 hover:bg-[#620074]
+                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+                asChild
+              >
+                <Link href="/auth/signin">Login</Link>
+              </Button>
+              <Button 
+                className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
+                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+                asChild
+              >
+                <Link href="/auth/signup">Join For Free</Link>
+              </Button>
+            </div>
           </div>
           
           {/* Mobile Menu Toggle */}
