@@ -1,11 +1,8 @@
 import NextAuth, { AuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/lib/prisma"
 
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -18,7 +15,9 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
         age: { label: "Age", type: "number" },
         parentalConsent: { label: "Parental Consent", type: "checkbox" },
-        action: { label: "Action", type: "text" }
+        action: { label: "Action", type: "text" },
+        name: { label: "Full Name", type: "text" },
+        role: { label: "Role", type: "text" }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -37,10 +36,11 @@ export const authOptions: AuthOptions = {
           const res = await fetch(`${apiBaseUrl}/auth/signup`, {
             method: 'POST',
             body: JSON.stringify({
+              fullname: credentials.name,
               email: credentials.email,
               password: credentials.password,
-              age: age,
-              // You might need to add other fields like name, role etc.
+              role: credentials.role,
+              country: "Not Specified",
             }),
             headers: { "Content-Type": "application/json" }
           });
@@ -98,7 +98,6 @@ export const authOptions: AuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
     error: '/auth/error'
   },
   secret: process.env.NEXTAUTH_SECRET,
