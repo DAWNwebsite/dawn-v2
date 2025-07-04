@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -52,31 +53,26 @@ export default function SignUpPage() {
     }
 
     try {
-      // In a real implementation, this would call your backend API
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          age: parseInt(formData.age),
-          role: formData.role,
-          hasParentalConsent: formData.parentalConsent
-        }),
-      })
+      const result = await signIn("credentials", {
+        redirect: false, // Important to handle success/failure manually
+        email: formData.email,
+        password: formData.password,
+        age: formData.age,
+        parentalConsent: formData.parentalConsent,
+        action: "signup",
+        // Add any other fields your backend expects for signup
+        name: formData.name, 
+        role: formData.role
+      });
 
-      if (response.ok) {
+      if (result?.ok) {
         // Redirect to sign-in page with success message
-        router.push("/auth/signin?message=Account created successfully")
+        router.push("/auth/signin?message=Account created successfully! Please log in.");
       } else {
-        const data = await response.json()
-        setError(data.message || "Failed to create account")
+        setError(result?.error || "Failed to create account. Please try again.");
       }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
+    } catch (error: any) {
+      setError(error.message || "An error occurred. Please try again.");
     } finally {
       setIsLoading(false)
     }

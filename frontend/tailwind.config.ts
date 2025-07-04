@@ -16,6 +16,22 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    'hidden',
+    'flex',
+    'md:flex',
+    'lg:flex',
+    'md:hidden',
+    'lg:hidden',
+    'lg:space-x-8',
+    'md:space-x-5',
+    'md:space-x-2',
+    'md:space-x-3',
+    'lg:space-x-4',
+    'items-center',
+    'space-x-8',
+    'space-x-2',
+  ],
   theme: {
     extend: {
       fontFamily: {

@@ -1,14 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [age, setAge] = useState("")
-  const [parentalConsent, setParentalConsent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   
@@ -19,33 +17,18 @@ export default function SignInPage() {
     setIsLoading(true)
     setError("")
 
-    // COPPA compliance check
-    const userAge = parseInt(age)
-    if (userAge < 13 && !parentalConsent) {
-      setError("Parental consent is required for users under 13 years old.")
-      setIsLoading(false)
-      return
-    }
-
     try {
       const result = await signIn("credentials", {
         email,
         password,
-        age,
-        parentalConsent: parentalConsent.toString(),
+        action: "signin",
         redirect: false,
       })
 
       if (result?.error) {
         setError(result.error)
-      } else {
-        // Check if user needs parental consent verification
-        const session = await getSession()
-        if (session?.user?.age && session.user.age < 13 && !session.user.hasParentalConsent) {
-          router.push("/auth/parental-consent")
-        } else {
-          router.push("/dashboard")
-        }
+      } else if (result?.ok) {
+        router.push("/dashboard")
       }
     } catch (error) {
       setError("An error occurred during sign-in. Please try again.")
@@ -144,48 +127,6 @@ export default function SignInPage() {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-
-            <div>
-              <label htmlFor="age" className="block text-sm font-medium text-gray-700">
-                Age (required for COPPA compliance)
-              </label>
-              <input
-                id="age"
-                type="number"
-                placeholder="Enter your age"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                required
-                disabled={isLoading}
-                min="5"
-                max="100"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {parseInt(age) < 13 && age !== "" && (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="text-sm text-blue-800">
-                  <strong>Parental Consent Required</strong>
-                  <p className="mt-1">
-                    Users under 13 require parental consent to use DAWN AI in compliance with COPPA regulations.
-                  </p>
-                </div>
-                <div className="mt-3 flex items-center">
-                  <input
-                    id="parental-consent"
-                    type="checkbox"
-                    checked={parentalConsent}
-                    onChange={(e) => setParentalConsent(e.target.checked)}
-                    disabled={isLoading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="parental-consent" className="ml-2 text-sm text-gray-700">
-                    I confirm that I have parental consent to use this service
-                  </label>
-                </div>
-              </div>
-            )}
 
             <button
               type="submit"
