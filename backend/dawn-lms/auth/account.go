@@ -168,7 +168,7 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 
 	refreshToken, errx := c.Cookie("refresh_token")
 	if errx != nil {
-		c.JSON(http.StatusBadRequest, errx.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": errx.Error()})
 		return models.User{}, errx
 
 	}
@@ -177,7 +177,7 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 	if err != nil {
 		userClaims, err = VerifyToken(refreshToken, []byte(secretKey))
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, err.Error())
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return models.User{}, err
 
 		}
@@ -185,7 +185,7 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 
 		user, err = GetUser(id)
 		if err != nil {
-			c.JSON(http.StatusNotFound, err.Error())
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return models.User{}, err
 		}
 		claims := map[string]any{

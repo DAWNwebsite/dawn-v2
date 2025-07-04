@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 export default withAuth(
   function middleware(req) {
@@ -64,8 +65,57 @@ export default withAuth(
   }
 )
 
+const secret = process.env.NEXTAUTH_SECRET
+
+export async function middleware(req) {
+  const token = await getToken({ req, secret })
+  const { pathname } = req.nextUrl
+
+  // Allow requests for API authentication and static files
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/static") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon.ico") ||
+    pathname === "/"
+  ) {
+    return NextResponse.next()
+  }
+  
+  // Temporarily allow access to the dashboard for debugging
+  if (pathname.startsWith("/dashboard")) {
+    return NextResponse.next();
+  }
+
+  // Redirect to login if no token and trying to access a protected route
+  if (!token && pathname !== "/auth/signin" && pathname !== "/auth/signup" && pathname !== "/auth/parental-consent") {
+    const loginUrl = new URL("/auth/signin", req.url)
+    loginUrl.searchParams.set("callbackUrl", pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // If user is logged in, and tries to access login/signup, redirect to dashboard
+  if (token && (pathname === "/auth/signin" || pathname === "/auth/signup")) {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
+  }
+
+  return NextResponse.next()
+}
+
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|images|public).*)',
-  ]
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    // Temporarily remove dashboard from protected routes
+    // '/dashboard/:path*',
+    '/profile/:path*',
+    '/settings/:path*',
+    '/admin/:path*'
+  ],
 } 
