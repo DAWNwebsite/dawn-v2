@@ -26,9 +26,11 @@ const nextConfig = {
     ],
   },
   env: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    REDIS_URL: process.env.REDIS_URL,
-    API_BASE_URL: process.env.API_BASE_URL,
+    DATABASE_URL: process.env.DATABASE_URL || 'postgresql://dawn_user:dawn_password@postgres:5432/dawn_lms_dev',
+    REDIS_URL: process.env.REDIS_URL || 'redis://redis:6379',
+    API_BASE_URL: process.env.API_BASE_URL || 'http://backend:8080',
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-nextauth-secret',
   },
 }
 
