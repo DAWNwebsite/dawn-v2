@@ -10,16 +10,13 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 // "github.com/joechristophers/GoEasyJWT"
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	
+	// The .env file is loaded by Docker Compose, so we don't need to load it here.
+	// The application will read variables directly from the container's environment.
+
 	// Initialize database connection
 	database.ConnectDB()
 
