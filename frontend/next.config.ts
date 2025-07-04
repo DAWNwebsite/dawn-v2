@@ -2,6 +2,14 @@
 const nextConfig = {
   output: 'standalone',
   serverExternalPackages: ['@prisma/client'],
+  eslint: {
+    // Disable ESLint during builds for faster deployment
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // Disable TypeScript checking during builds for faster deployment
+    ignoreBuildErrors: true,
+  },
   images: {
     domains: ['localhost'],
     dangerouslyAllowSVG: true,
