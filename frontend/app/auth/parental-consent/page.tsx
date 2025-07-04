@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 export default function ParentalConsentPage() {
   const { data: session, update } = useSession()
   const [parentEmail, setParentEmail] = useState("")
