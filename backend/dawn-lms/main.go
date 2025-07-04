@@ -4,7 +4,6 @@ import (
 	"aida/auth"
 	"aida/database"
 	"aida/routers"
-	"log"
 	"os"
 	"time"
 
