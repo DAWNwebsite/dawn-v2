@@ -20,54 +20,72 @@ export const authOptions: AuthOptions = {
         role: { label: "Role", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials) {
           return null
         }
-
+        
         const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080';
 
         // --- SIGN UP ---
         if (credentials.action === 'signup') {
-          const age = parseInt(credentials.age || "0");
-          if (age < 13 && !credentials.parentalConsent) {
-            throw new Error("Parental consent required for users under 13.");
-          }
-          
-          const res = await fetch(`${apiBaseUrl}/auth/signup`, {
-            method: 'POST',
-            body: JSON.stringify({
-              fullname: credentials.name,
-              email: credentials.email,
-              password: credentials.password,
-              role: credentials.role,
-              country: "Not Specified",
-            }),
-            headers: { "Content-Type": "application/json" }
-          });
-          const user = await res.json();
+          try {
+            const age = parseInt(credentials.age || "0");
+            if (age < 13 && !credentials.parentalConsent) {
+              throw new Error("Parental consent is required for users under 13.");
+            }
+            
+            const res = await fetch(`${apiBaseUrl}/auth/signup`, {
+              method: 'POST',
+              body: JSON.stringify({
+                fullname: credentials.name,
+                email: credentials.email,
+                password: credentials.password,
+                role: credentials.role,
+                country: "Not Specified",
+              }),
+              headers: { "Content-Type": "application/json" }
+            });
+            
+            const data = await res.json();
 
-          if (res.ok && user) {
-            return user;
+            if (!res.ok) {
+              throw new Error(data.error || 'Signup failed');
+            }
+            // On successful signup, we don't log the user in automatically.
+            // Return null and let the user log in on the sign-in page.
+            return null;
+
+          } catch (error: any) {
+            // Re-throw the error to be caught by the frontend
+            throw new Error(error.message);
           }
-          throw new Error(user.message || 'Signup failed');
         }
 
         // --- SIGN IN ---
         if (credentials.action === 'signin') {
-          const res = await fetch(`${apiBaseUrl}/auth/login`, {
-            method: 'POST',
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-            headers: { "Content-Type": "application/json" }
-          });
-          const user = await res.json();
+          try {
+            const res = await fetch(`${apiBaseUrl}/auth/login`, {
+              method: 'POST',
+              body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+              }),
+              headers: { "Content-Type": "application/json" }
+            });
 
-          if (res.ok && user) {
-            return user;
+            const data = await res.json();
+
+            if (!res.ok) {
+              throw new Error(data.error || 'Login failed');
+            }
+
+            // If login is successful, the backend returns user data and tokens.
+            // We pass this back to NextAuth to create the session.
+            return data.user;
+
+          } catch (error: any) {
+            throw new Error(error.message);
           }
-          return null; // Return null to display error to user
         }
         
         return null; // Default to null if no action matches
