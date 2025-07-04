@@ -84,6 +84,14 @@ class WebSocketServer {
       console.log('✅ Redis Pub/Sub integrated with WebSocket server');
     } catch (error) {
       console.error('❌ Failed to initialize Redis Pub/Sub:', error);
+      
+      // In development, continue without Redis
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🔧 Development mode: Continuing without Redis Pub/Sub');
+        this.pubSubInitialized = false;
+        return;
+      }
+      
       throw error;
     }
   }

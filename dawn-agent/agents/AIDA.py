@@ -8,8 +8,8 @@ import os
 
 load_dotenv()
 
-llm = os.getenv("PRIMARY_MODEL")
-model = GroqModel(llm , provider=GroqProvider(api_key={os.getenv("GROQ_API_KEY")}))
+llm = os.getenv("PRIMARY_MODEL", "llama-3.3-70b-versatile")
+model = GroqModel(llm, provider=GroqProvider(api_key=os.getenv("GROQ_API_KEY")))
 agent = Agent(model)
 
 logfire.configure(send_to_logfire='if-token-present')

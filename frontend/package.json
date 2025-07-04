@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node server.ts",
+    "dev": "tsx server.ts",
     "dev:next": "next dev",
     "build": "next build",
     "start": "next start",
-    "start:custom": "ts-node server.ts",
+    "start:custom": "tsx server.ts",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",

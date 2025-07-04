@@ -26,6 +26,7 @@ app.prepare().then(async () => {
 
   try {
     // Initialize WebSocket server with Redis Pub/Sub
+    console.log('🔄 Initializing WebSocket server...');
     await webSocketServer.initialize(httpServer);
     
     httpServer
@@ -35,24 +36,45 @@ app.prepare().then(async () => {
       })
       .listen(port, () => {
         console.log(`🚀 Ready on http://${hostname}:${port}`);
-        console.log('🔌 WebSocket server with Redis Pub/Sub initialized');
+        console.log('🔌 WebSocket server initialized');
+        if (dev) {
+          console.log('🔧 Running in development mode - Redis errors are non-fatal');
+        }
       });
 
     // Graceful shutdown handling
-    process.on('SIGTERM', async () => {
-      console.log('📴 SIGTERM received, shutting down gracefully...');
-      await webSocketServer.shutdown();
-      process.exit(0);
-    });
+    const gracefulShutdown = async (signal: string) => {
+      console.log(`📴 ${signal} received, shutting down gracefully...`);
+      try {
+        await webSocketServer.shutdown();
+        process.exit(0);
+      } catch (error) {
+        console.error('❌ Error during shutdown:', error);
+        process.exit(1);
+      }
+    };
 
-    process.on('SIGINT', async () => {
-      console.log('📴 SIGINT received, shutting down gracefully...');
-      await webSocketServer.shutdown();
-      process.exit(0);
-    });
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
   } catch (error) {
-    console.error('❌ Failed to initialize WebSocket server:', error);
-    process.exit(1);
+    console.error('❌ Failed to initialize server:', error);
+    
+    if (dev) {
+      console.log('🔧 Development mode: Starting server without Redis features...');
+      
+      // Start a basic HTTP server without WebSocket/Redis
+      httpServer
+        .once('error', (err) => {
+          console.error(err);
+          process.exit(1);
+        })
+        .listen(port, () => {
+          console.log(`🚀 Ready on http://${hostname}:${port}`);
+          console.log('⚠️  WebSocket/Redis features disabled - start Redis to enable them');
+        });
+    } else {
+      process.exit(1);
+    }
   }
 });

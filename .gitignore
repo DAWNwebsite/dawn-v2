@@ -68,3 +68,13 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# DAWN-specific
+dawn-agent-temp/
+dawn-agent/agents/__pycache__/
+dawn-agent-clean.tar
+frontend/tsconfig.server.json
+scripts/start-dev.sh
+backend/dawn-lms/.dockerignore
+dawn-agent/.dockerignore
+dawn-agent/Dockerfile.dev

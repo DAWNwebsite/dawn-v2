@@ -26,7 +26,7 @@ pydantic-settings==2.6.1
 python-multipart==0.0.12
 
 # Database and Storage
-sqlalchemy==2.0.36
+sqlalchemy==2.0.35
 alembic==1.14.0
 psycopg2-binary==2.9.10
 
@@ -45,8 +45,11 @@ loguru==0.7.3
 structlog==24.4.0
 
 # CORS and Security
-python-cors==1.7.0
+# FastAPI includes CORS middleware built-in
 
 # Utilities
 python-dateutil==2.9.0
 pytz==2024.2
+
+# Streamlit for web interface
+streamlit==1.40.1 

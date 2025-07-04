@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -53,6 +51,33 @@ services:
       - dawn-dev-network
     restart: unless-stopped
 
+  # Python Dawn Agent (Development)
+  agent:
+    build:
+      context: ./dawn-agent
+      dockerfile: Dockerfile.dev
+    container_name: dawn-agent-dev
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - AIDA_MODEL_NAME=${AIDA_MODEL_NAME:-llama-3.3-70b-versatile}
+      - AIDA_TEMPERATURE=${AIDA_TEMPERATURE:-0.1}
+      - AIDA_MAX_TOKENS=${AIDA_MAX_TOKENS:-4000}
+      - ADHD_THRESHOLD=${ADHD_THRESHOLD:-65.0}
+      - DYSLEXIA_THRESHOLD=${DYSLEXIA_THRESHOLD:-60.0}
+      - AUTISM_THRESHOLD=${AUTISM_THRESHOLD:-70.0}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-dawn_user}:${POSTGRES_PASSWORD:-dawn_password}@postgres:5432/${POSTGRES_DB:-dawn_lms_dev}
+    volumes:
+      - ./dawn-agent:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    networks:
+      - dawn-dev-network
+    restart: unless-stopped
+
   # Next.js Frontend (Development)
   frontend:
     build:
@@ -80,6 +105,7 @@ services:
       - postgres
       - redis
       - backend
+      - agent
     networks:
       - dawn-dev-network
     restart: unless-stopped

@@ -8,15 +8,23 @@ import (
 	//	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	goeasyjwt "github.com/joechristophers/GoEasyJWT"
 )
 
 var DB = database.ConnectDB()
 
 var secretKey = os.Getenv("SECRET_KEY")
+
+type Claims struct {
+	Fullname string    `json:"fullname"`
+	ID       uuid.UUID `json:"id"`
+	Role     string    `json:"role"`
+	jwt.StandardClaims
+}
 
 type SignUpInfo struct {
 	FullName string `json:"fullname"`
@@ -29,6 +37,44 @@ type SignUpInfo struct {
 type LoginInput struct {
 	Email    string
 	Password string
+}
+
+// GenerateToken creates a JWT token with the given claims and expiry hours
+func GenerateToken(claims map[string]any, secretKey []byte, expiryHours int) (string, error) {
+	// Convert map to structured claims
+	tokenClaims := Claims{
+		Fullname: claims["fullname"].(string),
+		ID:       claims["id"].(uuid.UUID),
+		Role:     claims["role"].(string),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * time.Duration(expiryHours)).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
+	return token.SignedString(secretKey)
+}
+
+// VerifyToken verifies a JWT token and returns the claims
+func VerifyToken(tokenString string, secretKey []byte) (map[string]any, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return map[string]any{
+			"fullname": claims.Fullname,
+			"id":       claims.ID,
+			"role":     claims.Role,
+		}, nil
+	}
+
+	return nil, jwt.ErrSignatureInvalid
 }
 
 func SignUp(c *gin.Context) {
@@ -86,8 +132,8 @@ func Login(c *gin.Context) {
 		"id":       user.ID,
 		"role":     user.Role,
 	}
-	accessToken, _ := goeasyjwt.GenerateToken(claims, []byte(secretKey), 4)
-	refreshToken, _ := goeasyjwt.GenerateToken(claims, []byte(secretKey), 30*50)
+	accessToken, _ := GenerateToken(claims, []byte(secretKey), 4)
+	refreshToken, _ := GenerateToken(claims, []byte(secretKey), 30*24)
 	c.SetCookie("access_token", accessToken, 300*300, "/", "", false, true)
 	c.SetCookie("refresh_token", refreshToken, 3000*3000, "/", "", false, true)
 
@@ -127,9 +173,9 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 
 	}
 
-	userClaims, err := goeasyjwt.VerifyToken(accessToken, []byte(secretKey))
+	userClaims, err := VerifyToken(accessToken, []byte(secretKey))
 	if err != nil {
-		userClaims, err = goeasyjwt.VerifyToken(refreshToken, []byte(secretKey))
+		userClaims, err = VerifyToken(refreshToken, []byte(secretKey))
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, err.Error())
 			return models.User{}, err
@@ -147,8 +193,8 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 			"id":       user.ID,
 			"role":     user.Role,
 		}
-		accessToken, _ := goeasyjwt.GenerateToken(claims, []byte(secretKey), 4)
-		refreshToken, _ := goeasyjwt.GenerateToken(claims, []byte(secretKey), 30*50)
+		accessToken, _ := GenerateToken(claims, []byte(secretKey), 4)
+		refreshToken, _ := GenerateToken(claims, []byte(secretKey), 30*24)
 		c.SetCookie("access_token", accessToken, 300*300, "/", "", false, true)
 		c.SetCookie("refresh_token", refreshToken, 3000*3000, "/", "", false, true)
 
