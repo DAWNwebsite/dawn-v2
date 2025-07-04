@@ -66,8 +66,9 @@ export default function SignUpPage() {
       });
 
       if (result?.ok) {
-        // Redirect to sign-in page with success message
-        router.push("/auth/signin?message=Account created successfully! Please log in.");
+        // Sign-up was successful and a session was created.
+        // Redirect directly to the dashboard.
+        router.push("/dashboard");
       } else {
         setError(result?.error || "Failed to create account. Please try again.");
       }
