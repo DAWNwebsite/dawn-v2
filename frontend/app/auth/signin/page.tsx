@@ -35,21 +35,34 @@ export default function SignInPage() {
     setError("")
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        action: "signin",
-        redirect: false,
-      })
+      // Direct API call to the backend
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (result?.error) {
-        if (result.error === "CredentialsSignin") {
-          setError("Invalid email or password. Please try again.")
+      const data = await response.json();
+
+      if (response.ok) {
+        // Manually trigger a NextAuth sign-in with the received user data
+        // This sets the session cookie without hitting the backend credentials provider again
+        const result = await signIn("credentials", {
+          redirect: false,
+          ...data, // Pass user data and token from our backend
+        });
+
+        if (result?.ok) {
+            router.push("/dashboard")
         } else {
-          setError(result.error)
+            setError(result?.error || "Failed to create session. Please try again.")
         }
-      } else if (result?.ok) {
-        router.push("/dashboard")
+
+      } else {
+        // Handle login errors from the backend
+        setError(data.error || "Invalid email or password.")
       }
     } catch (error) {
       setError("An error occurred during sign-in. Please try again.")
