@@ -11,7 +11,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['localhost'],
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -19,9 +18,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "utfs.io",
-        port: "",
-        // pathname: '/my-bucket/**',
-        search: "",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
       },
     ],
   },
