@@ -21,6 +21,9 @@ COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
 # Set build-time environment variables with defaults
+ARG PINECONE_API_KEY
+ENV PINECONE_API_KEY=$PINECONE_API_KEY
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NEXTAUTH_URL=http://localhost:3000
