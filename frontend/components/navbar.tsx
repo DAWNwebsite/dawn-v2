@@ -29,6 +29,10 @@ const navigation = [
     href: "/ai-spaces",
   },
   {
+    name: "Remote Jobs",
+    href: "/remote-jobs",
+  },
+  {
     name: "Accessibility",
     href: "/accessibility-demo",
   },
@@ -57,7 +61,7 @@ function Navbar() {
             aria-label="DAWN AI Study - Home"
           >
             <Image
-              className=""
+              className="dark:invert"
               src={process.env.NEXT_PUBLIC_DAWN_LOGO || "/images/logo.jpg"}
               alt="Dawn AI Study Logo"
               width={128}
@@ -102,15 +106,15 @@ function Navbar() {
             </Button>
             
             <Button
-              className="bg-secondary text-secondary-foreground border-border border-2 rounded-full hover:bg-primary hover:text-primary-foreground
-              transition-colors ease-in-out duration-300
+              className="bg-white text-[#620074] border-[#620074] border-2 rounded-full hover:text-white
+              hover:transition-all hover:ease-in-out hover:duration-300 hover:delay-100 hover:bg-[#620074]
               focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
               asChild
             >
               <Link href="/auth/signin">Login</Link>
             </Button>
             <Button 
-              className="bg-gradient-to-r from-dawn-purple to-dawn-orange text-white rounded-full
+              className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
               focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
               asChild
             >
@@ -168,15 +172,15 @@ function Navbar() {
             </ul>
             <div className="flex flex-col space-y-4 px-8 py-4">
               <Button
-                className="bg-secondary text-secondary-foreground border-border border-2 rounded-full hover:bg-primary hover:text-primary-foreground
-               transition-colors ease-in-out duration-300
+                className="bg-white text-[#620074] border-[#620074] border-2 rounded-full
+               hover:text-white hover:transition-all hover:duration-300 hover:delay-100 hover:bg-[#620074]
                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
                asChild
               >
                 <Link href="/auth/signin">Login</Link>
               </Button>
               <Button 
-                className="bg-gradient-to-r from-dawn-purple to-dawn-orange text-white rounded-full
+                className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
                 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
                 asChild
               >
