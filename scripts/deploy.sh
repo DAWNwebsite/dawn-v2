@@ -39,8 +39,8 @@ check_dependencies() {
         exit 1
     fi
     
-    if ! command -v docker-compose &> /dev/null; then
-        print_error "Docker Compose is not installed. Please install Docker Compose first."
+    if ! docker compose version &> /dev/null; then
+        print_error "Docker Compose is not installed. Please install Docker and the Compose plugin first."
         exit 1
     fi
     
@@ -109,13 +109,13 @@ deploy() {
     print_status "Building and deploying containers..."
     
     # Stop existing containers
-    docker-compose down --remove-orphans
+    docker compose down --remove-orphans
     
     # Build and start containers
     if [ "$ENVIRONMENT" = "production" ]; then
-        docker-compose -f docker-compose.yml up -d --build
+        docker compose -f docker-compose.yml up -d --build
     else
-        docker-compose -f docker-compose.dev.yml up -d --build
+        docker compose -f docker-compose.dev.yml up -d --build
     fi
     
     # Wait for services to be ready
@@ -124,8 +124,8 @@ deploy() {
     
     # Run database migrations
     print_status "Running database migrations..."
-    docker-compose exec frontend npx prisma migrate deploy || true
-    docker-compose exec frontend npx prisma generate || true
+    docker compose exec frontend npx prisma migrate deploy || true
+    docker compose exec frontend npx prisma generate || true
     
     print_status "Deployment completed ✅"
 }
@@ -135,7 +135,7 @@ health_check() {
     print_status "Performing health checks..."
     
     # Check if containers are running
-    if [ $(docker-compose ps -q | wc -l) -eq 0 ]; then
+    if [ $(docker compose ps -q | wc -l) -eq 0 ]; then
         print_error "No containers are running!"
         exit 1
     fi
@@ -165,9 +165,9 @@ show_info() {
     echo "🗄️  Database: localhost:5432"
     echo "📊 Redis: localhost:6379"
     echo ""
-    echo "📋 To view logs: docker-compose logs -f"
-    echo "🛑 To stop: docker-compose down"
-    echo "🔄 To restart: docker-compose restart"
+    echo "📋 To view logs: docker compose logs -f"
+    echo "🛑 To stop: docker compose down"
+    echo "🔄 To restart: docker compose restart"
     echo ""
     
     if [ "$ENVIRONMENT" = "production" ]; then
