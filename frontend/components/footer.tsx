@@ -27,7 +27,7 @@ const Footer = () => {
     >
       <div className="space-y-4 px-2">
         <Image
-          src={"/Images/logo.jpg"}
+          src={"/images/logo.jpg"}
           width={128}
           height={28}
           alt="dawn-logo"

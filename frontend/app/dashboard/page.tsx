@@ -17,6 +17,18 @@ import ParentView from '@/components/dashboard/ParentView';
 import TeacherView from '@/components/dashboard/TeacherView';
 import AdminView from '@/components/dashboard/AdminView';
 
+// MOCK SESSION FOR DEBUGGING (when authentication is off)
+const MOCK_SESSION = {
+  user: {
+    name: 'Test User',
+    email: 'test@example.com',
+    image: '',
+    id: 'test-user-id',
+    role: 'student', // or 'parent', 'teacher', 'admin' to test different views
+  },
+  expires: '2099-12-31T23:59:59.999Z',
+};
+
 // Types for our dashboard data
 interface DashboardData {
   progress: any[];
@@ -32,6 +44,10 @@ interface LoadingState {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+
+  // Use mock session if the real session isn't available and auth is off
+  const activeSession = process.env.NODE_ENV === 'development' ? (session || MOCK_SESSION) : session;
+
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     progress: [],
     diagnostics: [],
@@ -53,7 +69,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (status === 'unauthenticated') {
+  if (status === 'unauthenticated' && process.env.NODE_ENV !== 'development') {
     redirect('/auth/signin?callbackUrl=/dashboard');
   }
 
@@ -93,13 +109,13 @@ export default function DashboardPage() {
       }
     };
 
-    if (session?.user) {
+    if (activeSession?.user) {
       fetchDashboardData();
     }
-  }, [session]);
+  }, [activeSession]);
 
-  const userRole = (session?.user as any)?.role || 'student';
-  const userName = session?.user?.name || 'User';
+  const userRole = (activeSession?.user as any)?.role || 'student';
+  const userName = activeSession?.user?.name || 'User';
 
   // Loading state
   const isLoading = loading.progress || loading.diagnostics || loading.recommendations;
