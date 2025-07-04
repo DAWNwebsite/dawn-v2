@@ -39,8 +39,16 @@ check_dependencies() {
         exit 1
     fi
     
-    if ! docker compose version &> /dev/null; then
-        print_error "Docker Compose is not installed. Please install Docker and the Compose plugin first."
+    # Check for Docker Compose (try modern plugin first, then legacy)
+    if docker compose version &> /dev/null; then
+        print_status "Found Docker Compose plugin"
+        COMPOSE_CMD="docker compose"
+    elif command -v docker-compose &> /dev/null; then
+        print_status "Found legacy docker-compose"
+        COMPOSE_CMD="docker-compose"
+    else
+        print_error "Docker Compose is not available. Please install Docker Compose."
+        print_error "Try: sudo apt install docker-compose-plugin"
         exit 1
     fi
     
@@ -109,13 +117,13 @@ deploy() {
     print_status "Building and deploying containers..."
     
     # Stop existing containers
-    docker compose down --remove-orphans
+    $COMPOSE_CMD down --remove-orphans
     
     # Build and start containers
     if [ "$ENVIRONMENT" = "production" ]; then
-        docker compose -f docker-compose.yml up -d --build
+        $COMPOSE_CMD -f docker-compose.yml up -d --build
     else
-        docker compose -f docker-compose.dev.yml up -d --build
+        $COMPOSE_CMD -f docker-compose.dev.yml up -d --build
     fi
     
     # Wait for services to be ready
@@ -124,8 +132,8 @@ deploy() {
     
     # Run database migrations
     print_status "Running database migrations..."
-    docker compose exec frontend npx prisma migrate deploy || true
-    docker compose exec frontend npx prisma generate || true
+    $COMPOSE_CMD exec frontend npx prisma migrate deploy || true
+    $COMPOSE_CMD exec frontend npx prisma generate || true
     
     print_status "Deployment completed ✅"
 }
@@ -135,7 +143,7 @@ health_check() {
     print_status "Performing health checks..."
     
     # Check if containers are running
-    if [ $(docker compose ps -q | wc -l) -eq 0 ]; then
+    if [ $($COMPOSE_CMD ps -q | wc -l) -eq 0 ]; then
         print_error "No containers are running!"
         exit 1
     fi
@@ -165,9 +173,9 @@ show_info() {
     echo "🗄️  Database: localhost:5432"
     echo "📊 Redis: localhost:6379"
     echo ""
-    echo "📋 To view logs: docker compose logs -f"
-    echo "🛑 To stop: docker compose down"
-    echo "🔄 To restart: docker compose restart"
+    echo "📋 To view logs: $COMPOSE_CMD logs -f"
+    echo "🛑 To stop: $COMPOSE_CMD down"
+    echo "🔄 To restart: $COMPOSE_CMD restart"
     echo ""
     
     if [ "$ENVIRONMENT" = "production" ]; then
