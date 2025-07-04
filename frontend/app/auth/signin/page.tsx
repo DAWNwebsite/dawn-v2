@@ -1,27 +1,33 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 export const dynamic = "force-dynamic"
+
+function ShowSuccessMessage() {
+  const searchParams = useSearchParams()
+  const successMessage = searchParams.get("message")
+
+  if (!successMessage) {
+    return null
+  }
+
+  return (
+    <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+      {successMessage}
+    </div>
+  )
+}
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [message, setMessage] = useState("")
   
   const router = useRouter()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    const successMessage = searchParams.get("message")
-    if (successMessage) {
-      setMessage(successMessage)
-    }
-  }, [searchParams])
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,11 +81,9 @@ export default function SignInPage() {
             </div>
           )}
 
-          {message && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-              {message}
-            </div>
-          )}
+          <Suspense fallback={null}>
+            <ShowSuccessMessage />
+          </Suspense>
 
           <button
             onClick={handleGoogleSignIn}
