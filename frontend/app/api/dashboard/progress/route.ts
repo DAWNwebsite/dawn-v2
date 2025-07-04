@@ -1,18 +1,35 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  // In a real application, you would fetch this data from your database
-  // based on the logged-in user's session.
   const mockProgressData = {
-    progress: [
-      { id: 1, subject: 'Mathematics', progress: 75, grade: 'A-' },
-      { id: 2, subject: 'Reading Comprehension', progress: 60, grade: 'B' },
-      { id: 3, subject: 'Science', progress: 85, grade: 'A' },
-    ],
+    parent: [
+      {
+        studentId: 'student-1',
+        studentName: 'Emma Johnson',
+        courseProgress: [
+          {
+            courseId: 'course-1',
+            courseName: 'Introduction to Reading',
+            completionPercentage: 75,
+            timeSpent: 1800,
+            lastAccessed: new Date().toISOString(),
+            status: 'in-progress'
+          }
+        ],
+        overallProgress: {
+          totalCourses: 2,
+          completedCourses: 0,
+          averageScore: 67.5,
+          totalTimeSpent: 3000
+        }
+      }
+    ]
   };
 
   return NextResponse.json({
     message: "Success",
-    data: mockProgressData,
+    data: {
+      progress: mockProgressData.parent
+    },
   }, { status: 200 });
 }
