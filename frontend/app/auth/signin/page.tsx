@@ -1,16 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [message, setMessage] = useState("")
   
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const successMessage = searchParams.get("message")
+    if (successMessage) {
+      setMessage(successMessage)
+    }
+  }, [searchParams])
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +35,11 @@ export default function SignInPage() {
       })
 
       if (result?.error) {
-        setError(result.error)
+        if (result.error === "CredentialsSignin") {
+          setError("Invalid email or password. Please try again.")
+        } else {
+          setError(result.error)
+        }
       } else if (result?.ok) {
         router.push("/dashboard")
       }
@@ -57,6 +70,12 @@ export default function SignInPage() {
           {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               {error}
+            </div>
+          )}
+
+          {message && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+              {message}
             </div>
           )}
 

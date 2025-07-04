@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -47,33 +46,40 @@ export default function SignUpPage() {
     // COPPA compliance check
     const age = parseInt(formData.age)
     if (age < 13 && !formData.parentalConsent) {
-      setError("Parental consent is required for users under 13 years old")
+      setError("Parental consent is required for users under 13 years old.")
       setIsLoading(false)
       return
     }
 
     try {
-      const result = await signIn("credentials", {
-        redirect: false, // Important to handle success/failure manually
-        email: formData.email,
-        password: formData.password,
-        age: formData.age,
-        parentalConsent: formData.parentalConsent,
-        action: "signup",
-        // Add any other fields your backend expects for signup
-        name: formData.name, 
-        role: formData.role
-      });
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fullname: formData.name,
+          email: formData.email,
+          password: formData.password,
+          age: parseInt(formData.age),
+          role: formData.role,
+          country: "Not Specified" // Assuming default for now
+        })
+      })
 
-      if (result?.ok) {
-        // Sign-up was successful and a session was created.
-        // Redirect directly to the dashboard.
-        router.push("/dashboard");
+      if (response.ok) {
+        // Signup successful, redirect to the login page
+        router.push("/auth/signin?message=Signup successful! Please log in.")
       } else {
-        setError(result?.error || "Failed to create account. Please try again.");
+        const errorData = await response.json()
+        if (response.status === 400 && errorData.error?.includes("duplicate key value")) {
+          setError("An account with this email already exists. Please sign in.")
+        } else {
+          setError(errorData.error || "Failed to create account. Please try again.")
+        }
       }
     } catch (error: any) {
-      setError(error.message || "An error occurred. Please try again.");
+      setError(error.message || "An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
