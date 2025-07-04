@@ -45,14 +45,14 @@ function Navbar() {
 
   return (
     <>
-      <div className="justify-center w-full mx-auto bg-base-50 max-w-full">
+      <div className="justify-center w-full mx-auto bg-background max-w-full">
         <nav 
           className="w-full h-[90px] flex justify-between items-center px-8 py-2 relative lg:px-12 md:px-3"
           role="navigation"
           aria-label="Main navigation"
         >
           <Link
-            className="text-base leading-normal hover:text-accent-500 font-medium flex items-center gap-2 text-base-900 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg"
+            className="text-base leading-normal hover:text-accent-500 font-medium flex items-center gap-2 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg"
             href="/"
             aria-label="DAWN AI Study - Home"
           >
@@ -87,7 +87,7 @@ function Navbar() {
           </div>
           
           {/* Desktop Actions */}
-          <div className="hidden md:flex lg:space-x-4 md:space-x-3 items-center">
+          <div className="hidden lg:flex md:flex items-center space-x-4">
             {/* Accessibility Toggle */}
             <Button
               variant="outline"
@@ -102,15 +102,15 @@ function Navbar() {
             </Button>
             
             <Button
-              className="bg-white text-[#620074] border-[#620074] border-2 rounded-full hover:text-white
-              hover:transition-all hover:ease-in-out hover:duration-300 hover:delay-100 hover:bg-[#620074]
+              className="bg-secondary text-secondary-foreground border-border border-2 rounded-full hover:bg-primary hover:text-primary-foreground
+              transition-colors ease-in-out duration-300
               focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
               asChild
             >
               <Link href="/auth/signin">Login</Link>
             </Button>
             <Button 
-              className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
+              className="bg-gradient-to-r from-dawn-purple to-dawn-orange text-white rounded-full
               focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
               asChild
             >
@@ -139,9 +139,9 @@ function Navbar() {
               aria-controls="mobile-menu"
             >
               {menuOpen ? (
-                <X className="h-6 w-6 text-base-900" />
+                <X className="h-6 w-6 text-foreground" />
               ) : (
-                <Menu className="h-6 w-6 text-base-900" />
+                <Menu className="h-6 w-6 text-foreground" />
               )}
             </button>
           </div>
@@ -168,15 +168,15 @@ function Navbar() {
             </ul>
             <div className="flex flex-col space-y-4 px-8 py-4">
               <Button
-                className="bg-white text-[#620074] border-[#620074] border-2 rounded-full
-               hover:text-white hover:transition-all hover:duration-300 hover:delay-100 hover:bg-[#620074]
+                className="bg-secondary text-secondary-foreground border-border border-2 rounded-full hover:bg-primary hover:text-primary-foreground
+               transition-colors ease-in-out duration-300
                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
                asChild
               >
                 <Link href="/auth/signin">Login</Link>
               </Button>
               <Button 
-                className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
+                className="bg-gradient-to-r from-dawn-purple to-dawn-orange text-white rounded-full
                 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
                 asChild
               >
