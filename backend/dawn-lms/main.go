@@ -36,9 +36,15 @@ func main() {
 
 	r := gin.Default()
 
+	// CORS configuration
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if frontendOrigin == "" {
+		frontendOrigin = "http://localhost:3000" // Default for local development
+	}
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // frontend origin
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowOrigins:     []string{frontendOrigin},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
