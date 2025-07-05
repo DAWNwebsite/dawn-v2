@@ -88,6 +88,9 @@ func main() {
 	}
 	r.Run(":" + port)
 
+	// Keep the application running
+	select {}
+
 	//
 	///go build -tags netgo -ldflags '-s -w' -o app
 }
