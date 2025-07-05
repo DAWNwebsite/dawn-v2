@@ -1,47 +1,51 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-// =================================================================
-// ============== A U T H E N T I C A T I O N   I S   O N ===========
-// =================================================================
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const { pathname } = req.nextUrl;
 
-/**
- * Simple middleware to allow all requests to pass through for debugging. (Currently disabled)
- *
-export function middleware(request: NextRequest) {
-  return NextResponse.next()
-}
-*/
+  // Define public, protected, and auth routes
+  const publicRoutes = ['/', '/about', '/contact', '/students', '/educators'];
+  const protectedRoutes = ['/dashboard', '/profile', '/assessments', 'learning'];
+  const authRoutes = ['/auth/signin', '/auth/signup', '/auth/parental-consent'];
 
+  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/api/public');
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const isAuthRoute = authRoutes.includes(pathname);
 
-// FULL AUTHENTICATION MIDDLEWARE (Currently enabled)
-
-import { withAuth } from "next-auth/middleware"
-
-export default withAuth(
-  // Augment the request with the user's token
-  function middleware(req) {
-    const token = req.nextauth.token
-    const { pathname } = req.nextUrl
-
-    // Role-based access control can be handled here if needed
-    // For example:
-    // if (pathname.startsWith("/admin") && token?.role !== "admin") {
-    //   return new NextResponse("You are not authorized!");
-    // }
-
-    return NextResponse.next()
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
+  // If the user has a token (is logged in)
+  if (token) {
+    // If they try to access an auth route (like signin), redirect to dashboard
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+    // Otherwise, allow access to any other route
+    return NextResponse.next();
   }
-);
 
+  // If the user does not have a token (is not logged in)
+  if (!token) {
+    // If they try to access a protected route, redirect to signin
+    if (isProtectedRoute) {
+      const loginUrl = new URL('/auth/signin', req.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    // Otherwise, allow access to public and auth routes
+    return NextResponse.next();
+  }
+}
 
 export const config = {
-  // This matcher applies the middleware to all routes except for static assets and API routes.
-  // When re-enabling authentication, you might want to make this more specific.
-  matcher: "/((?!api|_next/static|_next/image|favicon.ico).*)",
-} 
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/ (API routes, other than public ones)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api/auth/session|api/public|_next/static|_next/image|favicon.ico).*)',
+  ],
+}; 
