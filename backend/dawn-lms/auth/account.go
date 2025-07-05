@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"aida/config"
 	"aida/models"
 	"aida/utils"
 
