@@ -14,7 +14,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
+
+func SetupAuthRoutes(r *gin.Engine, db *gorm.DB) {
+	authGroup := r.Group("/auth")
+	{
+		authGroup.POST("/signup", SignUp(db))
+		authGroup.POST("/login", Login(db))
+	}
+}
 
 var secretKey = os.Getenv("SECRET_KEY")
 
@@ -83,87 +92,88 @@ func VerifyToken(tokenString string, secretKey []byte) (map[string]any, error) {
 	return nil, jwt.ErrSignatureInvalid
 }
 
-func SignUp(c *gin.Context) {
-	SignupInput := SignUpInfo{}
-	erro := c.BindJSON(&SignupInput)
-	if erro != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": erro.Error()})
-		return
-	}
-	hashed, err := utils.HashPassword(SignupInput.Password)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	newAccount := models.User{
-		ID:       uuid.New(),
-		FullName: SignupInput.FullName,
-		Email:    SignupInput.Email,
-		Password: hashed,
-		Country:  &SignupInput.Country,
-		Role:     SignupInput.Role,
-	}
-
-	db := config.DB()
-	err = db.Create(&newAccount).Error
-	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			c.JSON(http.StatusConflict, gin.H{"error": "User with this email already exists."})
+func SignUp(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		SignupInput := SignUpInfo{}
+		erro := c.BindJSON(&SignupInput)
+		if erro != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": erro.Error()})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account."})
-		return
+		hashed, err := utils.HashPassword(SignupInput.Password)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		newAccount := models.User{
+			ID:       uuid.New(),
+			FullName: SignupInput.FullName,
+			Email:    SignupInput.Email,
+			Password: hashed,
+			Country:  &SignupInput.Country,
+			Role:     SignupInput.Role,
+		}
+
+		err = db.Create(&newAccount).Error
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				c.JSON(http.StatusConflict, gin.H{"error": "User with this email already exists."})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account."})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"message": "Account created successfully"})
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "Account created successfully"})
 }
 
-func Login(c *gin.Context) {
-	user := models.User{}
-	logInput := LoginInput{}
-	erro := c.BindJSON(&logInput)
-	if erro != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": erro.Error()})
-		return
-	}
-	email := logInput.Email
-	password := logInput.Password
+func Login(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := models.User{}
+		logInput := LoginInput{}
+		erro := c.BindJSON(&logInput)
+		if erro != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": erro.Error()})
+			return
+		}
+		email := logInput.Email
+		password := logInput.Password
 
-	db := config.DB()
-	err := db.Where("Email = ?", email).First(&user).Error
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-	isPasswordValid, erro := utils.ComparePassword(password, user.Password)
-	if !isPasswordValid || erro != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-		return
-	}
-	claims := map[string]any{
-		"fullname": user.FullName,
-		"id":       user.ID,
-		"role":     user.Role,
-	}
-	accessToken, _ := GenerateToken(claims, []byte(secretKey), 4)
-	refreshToken, _ := GenerateToken(claims, []byte(secretKey), 30*24)
-	c.SetCookie("access_token", accessToken, 300*300, "/", "", false, true)
-	c.SetCookie("refresh_token", refreshToken, 3000*3000, "/", "", false, true)
+		err := db.Where("Email = ?", email).First(&user).Error
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			return
+		}
+		isPasswordValid, erro := utils.ComparePassword(password, user.Password)
+		if !isPasswordValid || erro != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			return
+		}
+		claims := map[string]any{
+			"fullname": user.FullName,
+			"id":       user.ID,
+			"role":     user.Role,
+		}
+		accessToken, _ := GenerateToken(claims, []byte(secretKey), 4)
+		refreshToken, _ := GenerateToken(claims, []byte(secretKey), 30*24)
+		c.SetCookie("access_token", accessToken, 300*300, "/", "", false, true)
+		c.SetCookie("refresh_token", refreshToken, 3000*3000, "/", "", false, true)
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": UserResponse{
-			ID:       user.ID,
-			FullName: user.FullName,
-			Email:    user.Email,
-			Role:     user.Role,
-		},
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	})
+		c.JSON(http.StatusOK, gin.H{
+			"user": UserResponse{
+				ID:       user.ID,
+				FullName: user.FullName,
+				Email:    user.Email,
+				Role:     user.Role,
+			},
+			"access_token":  accessToken,
+			"refresh_token": refreshToken,
+		})
+	}
 }
 
-func GetUser(id any) (models.User, error) {
+func GetUser(id any, db *gorm.DB) (models.User, error) {
 	user := models.User{}
-	db := config.DB()
 	err := db.Where("ID = ?", id).Preload("StudentProfile").
 		Preload("TeacherProfile").
 		Preload("TeacherProfile.Profile").
@@ -180,7 +190,7 @@ func GetUser(id any) (models.User, error) {
 	return user, err
 }
 
-func CurrentUser(c *gin.Context) (models.User, error) {
+func CurrentUser(c *gin.Context, db *gorm.DB) (models.User, error) {
 	user := models.User{}
 	accessToken, _ := c.Cookie("access_token")
 
@@ -201,7 +211,7 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 		}
 		id := userClaims["id"]
 
-		user, err = GetUser(id)
+		user, err = GetUser(id, db)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return models.User{}, err
@@ -219,7 +229,7 @@ func CurrentUser(c *gin.Context) (models.User, error) {
 	}
 	id := userClaims["id"]
 
-	user, err = GetUser(id)
+	user, err = GetUser(id, db)
 	return user, err
 }
 

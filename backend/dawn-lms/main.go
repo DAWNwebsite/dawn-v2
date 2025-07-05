@@ -3,6 +3,7 @@ package main
 import (
 	"aida/auth"
 	"aida/database"
+	"aida/models"
 	"aida/routers"
 	"flag"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // "github.com/joechristophers/GoEasyJWT"
@@ -20,18 +22,35 @@ func main() {
 	seedDb := flag.Bool("seed", false, "Set to true to seed the database")
 	flag.Parse()
 
-	if *seedDb {
-		fmt.Println("Seeding the database...")
-		// Call your seeding function here
-		// Note: The seeder now has its own main func, so we will call it via a command
-		// This is just to demonstrate where the logic would go.
-		// For now, we will rely on a direct `go run` command.
-		return // Exit after seeding
+	// Initialize database connection
+	db := database.ConnectDB()
+	if db == nil {
+		log.Fatal("Failed to connect to the database")
 	}
 
-	// Initialize database connection
-	if err := database.InitDatabase(); err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+	// Auto-migrate database schema
+	err := db.AutoMigrate(
+		&models.User{},
+		&models.AccessibilityPreferences{},
+		&models.LearningProfile{},
+		&models.DiagnosticResult{},
+		&models.ParentalConsent{},
+		&models.Challenges{},
+		&models.Course{},
+		&models.Student{},
+		&models.Teacher{},
+		&models.Preference{},
+		&models.Product{},
+	)
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+	log.Println("Database migration completed successfully")
+
+	if *seedDb {
+		fmt.Println("Seeding the database...")
+		// The seeder script will be a separate main package, so this is illustrative
+		return // Exit after seeding is conceptually done here
 	}
 
 	r := gin.Default()
@@ -51,6 +70,13 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Pass the database connection to the router setup functions
+	auth.SetupAuthRoutes(r, db)
+	routers.SetupUserRoutes(r, db)
+	routers.SetupStudentRoutes(r, db)
+	routers.SetupCourseRoutes(r, db)
+	routers.SetupTeacherRoutes(r, db)
+
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -60,51 +86,13 @@ func main() {
 		})
 	})
 
-	r.POST("auth/signup", auth.SignUp)
-	r.POST("/auth/login", auth.Login)
-
-	User := r.Group("user")
-	Student := r.Group("student")
-	Course := r.Group("course")
-	Teacher := r.Group("/teacher")
-	User.GET("/profile", routers.UserProfile)
-
-	Student.POST("new", routers.CreateStudentProfile)
-	Student.GET("/all", routers.GetStudents)
-	Student.GET("/:id", routers.GetASudent)
-	Student.GET("/myprofile", routers.GetStudentProfile)
-	Student.DELETE("/delete", routers.DeleteStudentProfile)
-
-	Course.POST("/new", routers.CreateCourse)
-	Course.GET("/all", routers.GetAllCourses)
-	Course.GET("/:id", routers.GetOneCourse)
-	Course.DELETE("/:id/delete", routers.DeleteCourse)
-	Course.PUT("/:id/students/new", routers.AddCourseToStudent)
-	Course.DELETE("/:id/students/delete", routers.RemoveStudentFromCourse)
-	Course.DELETE("/:id/teachers/delete", routers.RemoveTeacherFromCourse)
-	Course.PUT("/:id/teachers/new", routers.AddTeacherToCourse)
-	Course.GET("/:id/teachers", routers.GetAllCourseTeachers)
-
-	Teacher.POST("/new", routers.CreateTeachers)
-	Teacher.GET("/all", routers.GetAllTeachers)
-	Teacher.GET("/:id", routers.GetOneTeacher)
-
-	Course.GET("/:id/students", routers.GetCourseStudents)
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	// Run the server in a goroutine so it doesn't block
-	go func() {
-		if err := r.Run(":" + port); err != nil {
-			log.Fatalf("Failed to run server: %v", err)
-		}
-	}()
-
-	log.Println("Backend service started. Waiting for requests...")
-
-	// Block the main thread indefinitely to keep the service alive.
-	select {}
+	log.Println("Backend service starting on port " + port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("Failed to run server: %v", err)
+	}
 }
