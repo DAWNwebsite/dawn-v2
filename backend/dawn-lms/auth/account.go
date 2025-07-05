@@ -100,7 +100,7 @@ func SignUp(c *gin.Context) {
 		FullName: SignupInput.FullName,
 		Email:    SignupInput.Email,
 		Password: hashed,
-		Country:  SignupInput.Country,
+		Country:  &SignupInput.Country,
 		Role:     SignupInput.Role,
 	}
 
