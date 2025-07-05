@@ -8,13 +8,15 @@ import (
 )
 
 type User struct {
-	gorm.Model
 	ID                       uuid.UUID                 `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	CreatedAt                time.Time
+	UpdatedAt                time.Time
+	DeletedAt                gorm.DeletedAt 			   `gorm:"index"`
 	FullName                 string                    `gorm:"not null"`
 	Email                    string                    `gorm:"unique;not null"`
 	Password                 string                    `json:"-" gorm:"not null"`
-	Country                  string
-	DateOfBirth              *time.Time                `gorm:"index"` // For COPPA compliance
+	Country                  *string                   // Changed to pointer to be nullable
+	DateOfBirth              *time.Time                `gorm:"index"` // Already a pointer, which is correct
 	Role                     string                    `gorm:"not null;default:'student'"`
 	ProfilePicture           string                    `gorm:"default:'https://avatar.iran.liara.run/public/girl'"`
 	
