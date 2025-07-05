@@ -39,12 +39,13 @@ export default function SignInPage() {
         email,
         password,
         action: "signin",
-        redirect: true,
-        callbackUrl: "/dashboard",
+        redirect: false,
       })
 
       if (result?.error) {
         setError(result.error)
+      } else if (result?.ok) {
+        router.push("/dashboard")
       }
     } catch (error) {
       setError("An error occurred during sign-in. Please try again.")
