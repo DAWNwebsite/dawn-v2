@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -52,34 +53,26 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          fullname: formData.name,
-          email: formData.email,
-          password: formData.password,
-          age: parseInt(formData.age),
-          role: formData.role,
-          country: "Not Specified" // Assuming default for now
-        })
+      const result = await signIn("credentials", {
+        redirect: false, // We handle the redirect manually
+        action: "signup",
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        age: formData.age,
+        role: formData.role,
+        parentalConsent: formData.parentalConsent,
       })
 
-      if (response.ok) {
-        // Signup successful, redirect to the login page
+      if (result?.error) {
+        // This error comes from the NextAuth `authorize` function
+        setError(result.error)
+      } else if (result?.ok) {
+        // Signup successful, redirect to the login page with a success message
         router.push("/auth/signin?message=Signup successful! Please log in.")
-      } else {
-        const errorData = await response.json()
-        if (response.status === 400 && errorData.error?.includes("duplicate key value")) {
-          setError("An account with this email already exists. Please sign in.")
-        } else {
-          setError(errorData.error || "Failed to create account. Please try again.")
-        }
       }
     } catch (error: any) {
-      setError(error.message || "An error occurred. Please try again.")
+      setError(error.message || "An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
