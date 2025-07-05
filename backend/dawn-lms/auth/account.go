@@ -34,6 +34,13 @@ type SignUpInfo struct {
 	Role     string `json:"role"`
 }
 
+type UserResponse struct {
+	ID       uuid.UUID `json:"id"`
+	FullName string    `json:"fullname"`
+	Email    string    `json:"email"`
+	Role     string    `json:"role"`
+}
+
 type LoginInput struct {
 	Email    string
 	Password string
@@ -103,7 +110,7 @@ func SignUp(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, newAccount)
+	c.JSON(http.StatusCreated, gin.H{"message": "Account created successfully"})
 }
 
 func Login(c *gin.Context) {
@@ -138,7 +145,12 @@ func Login(c *gin.Context) {
 	c.SetCookie("refresh_token", refreshToken, 3000*3000, "/", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{
-		"user":          user,
+		"user": UserResponse{
+			ID:       user.ID,
+			FullName: user.FullName,
+			Email:    user.Email,
+			Role:     user.Role,
+		},
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
 	})
