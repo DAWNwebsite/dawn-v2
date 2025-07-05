@@ -74,9 +74,17 @@ services:
     build:
       context: ./backend/dawn-lms
       dockerfile: Dockerfile
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-dawn_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dawn_password}
+      DB_NAME: ${POSTGRES_DB:-dawn_lms}
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - dawn-network
     command: ["/app/main", "--seed"]
 
   # Next.js Frontend
