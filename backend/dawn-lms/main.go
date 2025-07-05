@@ -6,7 +6,6 @@ import (
 	"aida/routers"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
