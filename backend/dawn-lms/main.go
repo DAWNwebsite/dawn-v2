@@ -6,6 +6,7 @@ import (
 	"aida/routers"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -29,7 +30,9 @@ func main() {
 	}
 
 	// Initialize database connection
-	database.ConnectDB()
+	if err := database.InitDatabase(); err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
 
 	r := gin.Default()
 

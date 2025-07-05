@@ -12,6 +12,16 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+var (
+	dbInstance *gorm.DB
+	err        error
+)
+
+// DB returns the singleton database instance.
+func DB() *gorm.DB {
+	return dbInstance
+}
+
 type DatabaseConfig struct {
 	Host         string
 	Port         int
@@ -64,13 +74,13 @@ func ConnectDatabase(config *DatabaseConfig) (*gorm.DB, error) {
 	}
 
 	// Connect to database
-	db, err := gorm.Open(postgres.Open(config.GetDSN()), gormConfig)
+	dbInstance, err = gorm.Open(postgres.Open(config.GetDSN()), gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	// Get underlying sql.DB for connection pooling
-	sqlDB, err := db.DB()
+	sqlDB, err := dbInstance.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
@@ -86,7 +96,7 @@ func ConnectDatabase(config *DatabaseConfig) (*gorm.DB, error) {
 	}
 
 	log.Printf("Successfully connected to PostgreSQL database: %s", config.Database)
-	return db, nil
+	return dbInstance, nil
 }
 
 // Helper functions

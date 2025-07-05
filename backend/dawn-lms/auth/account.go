@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"aida/database"
+	"aida/config"
 	"aida/models"
 	"aida/utils"
 
@@ -14,8 +14,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
-
-var DB = database.ConnectDB()
 
 var secretKey = os.Getenv("SECRET_KEY")
 
@@ -105,7 +103,8 @@ func SignUp(c *gin.Context) {
 		Role:     SignupInput.Role,
 	}
 
-	err = DB.Create(&newAccount).Error
+	db := config.DB()
+	err = db.Create(&newAccount).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -124,7 +123,8 @@ func Login(c *gin.Context) {
 	email := logInput.Email
 	password := logInput.Password
 
-	err := DB.Where("Email = ?", email).First(&user).Error
+	db := config.DB()
+	err := db.Where("Email = ?", email).First(&user).Error
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -158,7 +158,8 @@ func Login(c *gin.Context) {
 
 func GetUser(id any) (models.User, error) {
 	user := models.User{}
-	err := DB.Where("ID = ?", id).Preload("StudentProfile").
+	db := config.DB()
+	err := db.Where("ID = ?", id).Preload("StudentProfile").
 		Preload("TeacherProfile").
 		Preload("TeacherProfile.Profile").
 		Preload("TeacherProfile.Courses").
