@@ -12,10 +12,10 @@ datasource db {
 
 model Account {
   id                String  @id @default(cuid())
-  userId            String
+  userId            String  @map("user_id")
   type              String
   provider          String
-  providerAccountId String
+  providerAccountId String  @map("provider_account_id")
   refresh_token     String?
   access_token      String?
   expires_at        Int?
@@ -27,37 +27,42 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
 model User {
-  id                String    @id @default(cuid())
-  name              String?
-  email             String    @unique
-  emailVerified     DateTime?
-  image             String?
-  role              String    @default("student")
-  dateOfBirth       DateTime?
-  hasParentalConsent Boolean  @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String?   @unique
+  emailVerified      DateTime? @map("email_verified")
+  image              String?
+  role               String    @default("student")
+  dateOfBirth        DateTime? @map("date_of_birth")
+  hasParentalConsent Boolean   @default(false) @map("has_parental_consent")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  accounts Account[]
-  sessions Session[]
-  learningProfile LearningProfile?
-  diagnosticResults DiagnosticResult[]
-  parentalConsent ParentalConsent?
+  accounts                   Account[]
+  sessions                   Session[]
+  learningProfile            LearningProfile?
+  diagnosticResults          DiagnosticResult[]
+  parentalConsent            ParentalConsent?
   accessibilityPreferences AccessibilityPreferences?
-  userProgress UserProgress[]
-  sentMessages Message[]
+  userProgress               UserProgress[]
+  sentMessages               Message[]
   conversationParticipants ConversationParticipant[]
+
+  @@map("users")
 }
 
 model VerificationToken {
@@ -66,185 +71,185 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model LearningProfile {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  learningDisabilities  Json     // ["ADHD", "Dyslexia", "Autism"] - stored as JSON
-  learningStyle         String?  // "Visual", "Auditory", "Kinesthetic"
-  difficultyLevel       String   @default("beginner") // "beginner", "intermediate", "advanced"
-  preferredSubjects     Json     // stored as JSON array
-  accommodations        Json     // stored as JSON array
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  userId               String   @unique @map("user_id")
+  learningDisabilities Json     @map("learning_disabilities")
+  learningStyle        String?  @map("learning_style")
+  difficultyLevel      String   @default("beginner") @map("difficulty_level")
+  preferredSubjects    Json     @map("preferred_subjects")
+  accommodations       Json
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("learning_profiles")
 }
 
 model DiagnosticResult {
-  id                String   @id @default(cuid())
-  userId            String
-  assessmentType    String   // "ADHD", "Dyslexia", "Autism"
-  score             Float
-  confidence        Float
-  indicators        Json     // Key indicators found - stored as JSON
-  recommendations   Json     // Recommended accommodations - stored as JSON
-  completedAt       DateTime @default(now())
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  assessmentType  String   @map("assessment_type")
+  score           Float
+  confidence      Float
+  indicators      Json
+  recommendations Json
+  completedAt     DateTime @default(now()) @map("completed_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("diagnostic_results")
 }
 
 model ParentalConsent {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  parentName            String
-  parentEmail           String
-  relationshipToChild   String
-  consentGiven          Boolean  @default(false)
-  consentDate           DateTime?
-  ipAddress             String?
-  userAgent             String?
-  createdAt            DateTime @default(now())
+  id                  String    @id @default(cuid())
+  userId              String    @unique @map("user_id")
+  parentName          String    @map("parent_name")
+  parentEmail         String    @map("parent_email")
+  relationshipToChild String    @map("relationship_to_child")
+  consentGiven        Boolean   @default(false) @map("consent_given")
+  consentDate         DateTime? @map("consent_date")
+  ipAddress           String?   @map("ip_address")
+  userAgent           String?   @map("user_agent")
+  createdAt           DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("parental_consents")
 }
 
 model AccessibilityPreferences {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  highContrast          Boolean  @default(false)
-  largeText             Boolean  @default(false)
-  reducedMotion         Boolean  @default(false)
-  screenReader          Boolean  @default(false)
-  keyboardNavigation    Boolean  @default(false)
-  colorBlindFriendly    Boolean  @default(false)
-  dyslexiaFriendly      Boolean  @default(false)
-  focusIndicators       Boolean  @default(true)
-  simplifiedLayout      Boolean  @default(false)
-  textToSpeech          Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  userId               String   @unique @map("user_id")
+  highContrast         Boolean  @default(false) @map("high_contrast")
+  largeText            Boolean  @default(false) @map("large_text")
+  reducedMotion        Boolean  @default(false) @map("reduced_motion")
+  screenReader         Boolean  @default(false) @map("screen_reader")
+  keyboardNavigation   Boolean  @default(false) @map("keyboard_navigation")
+  colorBlindFriendly   Boolean  @default(false) @map("color_blind_friendly")
+  dyslexiaFriendly     Boolean  @default(false) @map("dyslexia_friendly")
+  focusIndicators      Boolean  @default(true) @map("focus_indicators")
+  simplifiedLayout     Boolean  @default(false) @map("simplified_layout")
+  textToSpeech         Boolean  @default(false) @map("text_to_speech")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accessibility_preferences")
 }
 
 model LearningModule {
   id              String   @id @default(cuid())
   title           String
   description     String?
-  subject         String   // "Math", "Reading", "Science", etc.
-  targetAudience  String   // "elementary", "middle", "high", "adult"
-  difficultyLevel String   @default("beginner") // "beginner", "intermediate", "advanced"
-  estimatedTime   Int?     // Estimated time in minutes
-  isActive        Boolean  @default(true)
-  order           Int      @default(0) // For sequencing modules
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  subject         String
+  targetAudience  String   @map("target_audience")
+  difficultyLevel String   @default("beginner") @map("difficulty_level")
+  estimatedTime   Int?     @map("estimated_time")
+  isActive        Boolean  @default(true) @map("is_active")
+  order           Int      @default(0)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  contentBlocks   ContentBlock[]
-  userProgress    UserProgress[]
+  contentBlocks ContentBlock[]
+  userProgress  UserProgress[]
 
-  @@index([subject, targetAudience])
-  @@index([order])
+  @@map("learning_modules")
 }
 
 model ContentBlock {
   id              String   @id @default(cuid())
-  moduleId        String
+  moduleId        String   @map("module_id")
   title           String
-  order           Int      // Order within the module
-  contentType     String   // "text", "video", "audio", "interactive_exercise"
-  contentData     Json     // JSONB field for flexible content storage
-  difficultyLevel String   @default("beginner") // "beginner", "intermediate", "advanced"
-  isRequired      Boolean  @default(true)
-  estimatedTime   Int?     // Estimated time in minutes
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  order           Int
+  contentType     String   @map("content_type")
+  contentData     Json     @map("content_data")
+  difficultyLevel String   @default("beginner") @map("difficulty_level")
+  isRequired      Boolean  @default(true) @map("is_required")
+  estimatedTime   Int?     @map("estimated_time")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  module          LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  userProgress    UserProgress[]
+  module       LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  userProgress UserProgress[]
 
-  @@index([moduleId, order])
-  @@index([contentType])
+  @@map("content_blocks")
 }
 
 model UserProgress {
-  id              String   @id @default(cuid())
-  userId          String
-  moduleId        String?  // Optional: for module-level progress
-  contentBlockId  String?  // Optional: for content-block-level progress
-  status          String   @default("not_started") // "not_started", "in_progress", "completed", "skipped"
-  score           Float?   // Optional score (0-100)
-  timeSpent       Int?     // Time spent in seconds
-  attempts        Int      @default(0)
-  lastAccessed    DateTime @default(now())
-  completedAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  moduleId       String?   @map("module_id")
+  contentBlockId String?   @map("content_block_id")
+  status         String    @default("not_started")
+  score          Float?
+  timeSpent      Int?      @map("time_spent")
+  attempts       Int       @default(0)
+  lastAccessed   DateTime  @default(now()) @map("last_accessed")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  module          LearningModule?  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  contentBlock    ContentBlock?    @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module       LearningModule? @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  contentBlock ContentBlock?   @relation(fields: [contentBlockId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, moduleId], name: "user_module_progress")
-  @@unique([userId, contentBlockId], name: "user_content_progress")
-  @@index([userId, status])
-  @@index([lastAccessed])
+  @@map("user_progress")
 }
 
 model Conversation {
-  id          String   @id @default(cuid())
-  subject     String?  // Optional conversation subject/topic
-  type        String   @default("general") // "general", "academic", "behavioral", "administrative"
-  status      String   @default("active") // "active", "archived", "closed"
-  priority    String   @default("normal") // "low", "normal", "high", "urgent"
-  isConfidential Boolean @default(false) // For sensitive conversations
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  lastActivity DateTime @default(now())
+  id           String   @id @default(cuid())
+  subject      String?
+  type         String   @default("general")
+  status       String   @default("active")
+  priority     String   @default("normal")
+  isConfidential Boolean  @default(false) @map("is_confidential")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  lastActivity DateTime @default(now()) @map("last_activity")
 
-  messages    Message[]
+  messages     Message[]
   participants ConversationParticipant[]
 
-  @@index([status, lastActivity])
-  @@index([type, priority])
+  @@map("conversations")
 }
 
 model ConversationParticipant {
-  id             String   @id @default(cuid())
-  conversationId String
-  userId         String
-  role           String   // "student", "parent", "teacher", "admin"
-  canMessage     Boolean  @default(true)
-  canModerate    Boolean  @default(false)
-  joinedAt       DateTime @default(now())
-  lastReadAt     DateTime?
+  id             String    @id @default(cuid())
+  conversationId String    @map("conversation_id")
+  userId         String    @map("user_id")
+  role           String
+  canMessage     Boolean   @default(true) @map("can_message")
+  canModerate    Boolean   @default(false) @map("can_moderate")
+  joinedAt       DateTime  @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([conversationId, userId])
-  @@index([userId])
+  @@map("conversation_participants")
 }
 
 model Message {
   id             String   @id @default(cuid())
-  conversationId String
-  senderId       String
+  conversationId String   @map("conversation_id")
+  senderId       String   @map("sender_id")
   content        String
-  messageType    String   @default("text") // "text", "file", "system", "notification"
-  isEdited       Boolean  @default(false)
-  isDeleted      Boolean  @default(false)
-  readBy         Json     // Array of user IDs who have read this message - stored as JSON
-  metadata       Json?    // For storing file attachments, formatting, etc.
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  messageType    String   @default("text") @map("message_type")
+  isEdited       Boolean  @default(false) @map("is_edited")
+  isDeleted      Boolean  @default(false) @map("is_deleted")
+  readBy         Json     @map("read_by")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
-  @@index([conversationId, createdAt])
-  @@index([senderId])
-  @@index([isDeleted, createdAt])
+  @@map("messages")
 } 
