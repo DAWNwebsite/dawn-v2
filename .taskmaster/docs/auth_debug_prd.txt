@@ -1,0 +1,28 @@
+# PRD: Authentication Flow Debug and Fix
+
+## 1. Overview
+The current authentication flow is failing, preventing users from signing in and accessing the dashboard. The primary goals are to fix the sign-in process, seed the database with test users, and ensure the frontend correctly handles the user session.
+
+## 2. Key Tasks
+This effort will be broken down into the following key tasks:
+
+### Task 1: Create Database Seeding Script
+- **Goal:** To create a standalone script that populates the database with a set of pre-defined test users (student, parent, teacher).
+- **Acceptance Criteria:**
+  - The script should be runnable from the command line.
+  - It should add at least one user for each role (student, parent, teacher) with hashed passwords.
+  - It should be idempotent, meaning it won't create duplicate users if run multiple times.
+
+### Task 2: Integrate Seeding Script into Backend
+- **Goal:** To make the seeding script easily accessible by integrating it into the backend service.
+- **Acceptance Criteria:**
+  - A new command or endpoint should be added to the backend to trigger the seeding script.
+  - The command should be added to the `docker-compose.yml` file for easy execution.
+
+### Task 3: Fix and Re-enable Authentication Middleware
+- **Goal:** To fix the final login issues and re-enable the frontend authentication middleware.
+- **Acceptance Criteria:**
+  - Users can successfully log in with the seeded test accounts.
+  - After logging in, the user is correctly redirected to the dashboard.
+  - The dashboard displays correctly with the logged-in user's data.
+  - All routes are protected again, and unauthenticated users are redirected to the sign-in page. 

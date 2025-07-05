@@ -683,5 +683,52 @@
       "updated": "2025-06-27T19:37:11.230Z",
       "description": "Tasks for master context"
     }
+  },
+  "auth-debug": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Create Database Seeding Script",
+        "description": "Create a standalone Go script that populates the database with pre-defined test users (student, parent, teacher). The script should be idempotent and hash passwords securely.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Integrate Seeding Script",
+        "description": "Make the seeding script easily accessible by integrating it into the backend service. A new command or endpoint should be added to trigger the script.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Re-enable and Fix Authentication",
+        "description": "Restore the frontend middleware to protect the dashboard and other routes. Fix the final login redirect issue and ensure users are correctly redirected to the dashboard after logging in.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2
+        ],
+        "priority": "high",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-05T00:02:52.525Z",
+      "updated": "2025-07-05T00:05:50.323Z",
+      "description": "Tasks for debugging and fixing the authentication flow"
+    }
   }
 }

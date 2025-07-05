@@ -41,7 +41,7 @@ services:
   backend:
     build:
       context: ./backend/dawn-lms
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: dawn-backend
     environment:
       - PORT=8080
@@ -57,9 +57,31 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - ./backend/dawn-lms/.env
     networks:
       - dawn-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: ["/app/main"] # Default command
+
+  # New service definition for running the seeder
+  backend-seeder:
+    build:
+      context: ./backend/dawn-lms
+      dockerfile: Dockerfile.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./backend/dawn-lms/.env
+    command: ["/app/main", "--seed"]
 
   # Next.js Frontend
   frontend:

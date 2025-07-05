@@ -4,6 +4,9 @@ import (
 	"aida/auth"
 	"aida/database"
 	"aida/routers"
+	"flag"
+	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -13,8 +16,18 @@ import (
 
 // "github.com/joechristophers/GoEasyJWT"
 func main() {
-	// The .env file is loaded by Docker Compose, so we don't need to load it here.
-	// The application will read variables directly from the container's environment.
+	// Check for command-line flags
+	seedDb := flag.Bool("seed", false, "Set to true to seed the database")
+	flag.Parse()
+
+	if *seedDb {
+		fmt.Println("Seeding the database...")
+		// Call your seeding function here
+		// Note: The seeder now has its own main func, so we will call it via a command
+		// This is just to demonstrate where the logic would go.
+		// For now, we will rely on a direct `go run` command.
+		return // Exit after seeding
+	}
 
 	// Initialize database connection
 	database.ConnectDB()

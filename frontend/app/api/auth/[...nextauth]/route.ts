@@ -73,15 +73,20 @@ export const authOptions: AuthOptions = {
               headers: { "Content-Type": "application/json" }
             });
 
-            const data = await res.json();
-
             if (!res.ok) {
-              throw new Error(data.error || 'Login failed');
+              const errorData = await res.json();
+              throw new Error(errorData.error || 'Login failed');
             }
 
-            // If login is successful, the backend returns user data and tokens.
-            // We pass this back to NextAuth to create the session.
-            return data.user;
+            const data = await res.json();
+            
+            // The backend returns { user, access_token, refresh_token }
+            // We need to return the user object to NextAuth
+            if (data && data.user) {
+              return data.user;
+            }
+
+            return null;
 
           } catch (error: any) {
             throw new Error(error.message);

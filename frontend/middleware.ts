@@ -2,25 +2,21 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 // =================================================================
-// ============== A U T H E N T I C A T I O N   I S   O F F ==========
-// =================================================================
-// To re-enable authentication, comment out the simple middleware
-// below and uncomment the full `withAuth` middleware logic.
+// ============== A U T H E N T I C A T I O N   I S   O N ===========
 // =================================================================
 
 /**
- * Simple middleware to allow all requests to pass through for debugging.
- */
+ * Simple middleware to allow all requests to pass through for debugging. (Currently disabled)
+ *
 export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
+*/
 
 
-/*
-// FULL AUTHENTICATION MIDDLEWARE (Currently disabled)
+// FULL AUTHENTICATION MIDDLEWARE (Currently enabled)
 
 import { withAuth } from "next-auth/middleware"
-import { getToken } from "next-auth/jwt"
 
 export default withAuth(
   // Augment the request with the user's token
@@ -42,7 +38,6 @@ export default withAuth(
     },
   }
 );
-*/
 
 
 export const config = {
