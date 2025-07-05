@@ -45,7 +45,7 @@ func CreateTeachers(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		newTeacher := models.Teacher{
-			ID:        uuid.New().String(),
+			ID:        uuid.New(),
 			ProfileID: tUser.ID,
 			Profile:   tUser,
 		}

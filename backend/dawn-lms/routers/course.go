@@ -43,7 +43,7 @@ func CreateCourse(db *gorm.DB) gin.HandlerFunc {
 		c.BindJSON(&courseInput)
 		if user.Role == "Admin" {
 			newCourse := models.Course{
-				ID:          uuid.New().String(),
+				ID:          uuid.New(),
 				Title:       courseInput.Title,
 				Description: courseInput.Description,
 			}

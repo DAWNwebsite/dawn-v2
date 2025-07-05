@@ -34,7 +34,7 @@ func CreateStudentProfile(db *gorm.DB) gin.HandlerFunc {
 		err = db.Where(models.Student{ProfileID: user.ID}).First(&oldRec).Error
 		if err != nil {
 			NewStudent := models.Student{
-				ID:        uuid.New().String(),
+				ID:        uuid.New(),
 				Profile:   user,
 				ProfileID: user.ID,
 			}
