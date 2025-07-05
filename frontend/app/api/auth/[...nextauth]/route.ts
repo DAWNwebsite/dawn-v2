@@ -29,12 +29,8 @@ export const authOptions: AuthOptions = {
         // --- SIGN UP ---
         if (credentials.action === 'signup') {
           try {
-            const age = parseInt(credentials.age || "0");
-            if (age < 13 && !credentials.parentalConsent) {
-              throw new Error("Parental consent is required for users under 13.");
-            }
-            
-            const res = await fetch(`${apiBaseUrl}/auth/signup`, {
+            // First, attempt to create the new user
+            const signupRes = await fetch(`${apiBaseUrl}/auth/signup`, {
               method: 'POST',
               body: JSON.stringify({
                 fullname: credentials.name,
@@ -45,60 +41,57 @@ export const authOptions: AuthOptions = {
               }),
               headers: { "Content-Type": "application/json" }
             });
-            
-            const data = await res.json();
 
-            if (!res.ok) {
-              throw new Error(data.error || 'Signup failed');
+            const signupData = await signupRes.json();
+
+            if (!signupRes.ok) {
+              // If signup fails (e.g., user already exists), throw an error
+              throw new Error(signupData.error || 'Signup failed');
             }
-            // On successful signup, we don't log the user in automatically.
-            // Return null and let the user log in on the sign-in page.
-            return null;
-
+            
+            // If signup is successful, immediately try to log the new user in
+            // Fall through to the sign-in logic
+            
           } catch (error: any) {
             // Re-throw the error to be caught by the frontend
             throw new Error(error.message);
           }
         }
 
-        // --- SIGN IN ---
-        if (credentials.action === 'signin') {
-          try {
-            const res = await fetch(`${apiBaseUrl}/auth/login`, {
-              method: 'POST',
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-              headers: { "Content-Type": "application/json" }
-            });
+        // --- SIGN IN (or fall-through from successful signup) ---
+        try {
+          const res = await fetch(`${apiBaseUrl}/auth/login`, {
+            method: 'POST',
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+            headers: { "Content-Type": "application/json" }
+          });
 
-            if (!res.ok) {
-              const errorData = await res.json();
-              throw new Error(errorData.error || 'Login failed');
-            }
-
-            const data = await res.json();
-            
-            // The backend returns { user: { ID, FullName, Email, Role } }
-            // We must map this to an object that NextAuth understands.
-            if (data && data.user) {
-              return {
-                id: data.user.ID,
-                name: data.user.FullName,
-                email: data.user.Email,
-                role: data.user.Role,
-              };
-            }
-
-            return null;
-
-          } catch (error: any) {
-            throw new Error(error.message);
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Login failed');
           }
+
+          const data = await res.json();
+          
+          // The backend returns { user: { ID, FullName, Email, Role } }
+          // We must map this to an object that NextAuth understands.
+          if (data && data.user) {
+            return {
+              id: data.user.ID,
+              name: data.user.FullName,
+              email: data.user.Email,
+              role: data.user.Role,
+            };
+          }
+
+          return null;
+
+        } catch (error: any) {
+          throw new Error(error.message);
         }
-        
-        return null; // Default to null if no action matches
       }
     })
   ],
