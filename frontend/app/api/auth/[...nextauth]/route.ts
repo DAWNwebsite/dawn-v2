@@ -102,24 +102,24 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      // The user object is only available on the first login.
+      // Persist the user data to the token.
       if (user) {
         token.id = user.id
-        token.role = user.role
-        token.age = user.age
-        token.hasParentalConsent = user.hasParentalConsent
         token.name = user.name
         token.email = user.email
+        token.role = user.role
       }
       return token
     },
     async session({ session, token }) {
+      // The session object is what the client-side receives.
+      // We are taking the data from the token and putting it into the session.
       if (token && session.user) {
         session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.age = token.age as number
-        session.user.hasParentalConsent = token.hasParentalConsent as boolean
         session.user.name = token.name as string
         session.user.email = token.email as string
+        session.user.role = token.role as string
       }
       return session
     }
