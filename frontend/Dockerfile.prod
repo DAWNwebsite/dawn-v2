@@ -51,7 +51,8 @@ ENV DATABASE_URL=postgresql://dawn_user:dawn_password@postgres:5432/dawn_lms
 ENV REDIS_URL=redis://redis:6379
 ENV API_BASE_URL=http://backend:8080
 
-# Generate Prisma client
+# Only generate the prisma client. Do not push, pull, or migrate.
+# The Go backend is the single source of truth for the database schema.
 RUN npx prisma generate
 
 # Build the application
