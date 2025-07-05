@@ -44,14 +44,14 @@ services:
       dockerfile: Dockerfile
     container_name: dawn-backend
     environment:
-      - PORT=8080
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${POSTGRES_USER:-dawn_user}
-      - DB_PASSWORD=${POSTGRES_PASSWORD:-dawn_password}
-      - DB_NAME=${POSTGRES_DB:-dawn_lms}
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
-      - GIN_MODE=release
+      PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-dawn_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-dawn_password}
+      DB_NAME: ${POSTGRES_DB:-dawn_lms}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
+      GIN_MODE: release
     ports:
       - "8080:8080"
     depends_on:
@@ -98,20 +98,20 @@ services:
         - REDIS_PASSWORD=${REDIS_PASSWORD:-dawn_redis_pass}
     container_name: dawn-frontend
     environment:
-      - NODE_ENV=production
-      - NEXTAUTH_URL=http://localhost
-      - NEXTAUTH_SECRET=a-very-secret-nextauth-secret-key
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-dawn_user}:${POSTGRES_PASSWORD:-dawn_password}@postgres:5432/${POSTGRES_DB:-dawn_lms}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-dawn_redis_pass}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - PINECONE_API_KEY=${PINECONE_API_KEY}
-      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
-      - PINECONE_INDEX=${PINECONE_INDEX}
-      - NEXT_PUBLIC_API_URL=http://localhost/api
+      NODE_ENV: production
+      NEXTAUTH_URL: http://localhost
+      NEXTAUTH_SECRET: a-very-secret-nextauth-secret-key
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dawn_user}:${POSTGRES_PASSWORD:-dawn_password}@postgres:5432/${POSTGRES_DB:-dawn_lms}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dawn_redis_pass}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      PINECONE_API_KEY: ${PINECONE_API_KEY}
+      PINECONE_ENVIRONMENT: ${PINECONE_ENVIRONMENT}
+      PINECONE_INDEX: ${PINECONE_INDEX}
+      NEXT_PUBLIC_API_URL: http://localhost/api
     ports:
       - "3000:3000"
     depends_on:
