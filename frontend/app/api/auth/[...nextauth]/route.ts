@@ -80,10 +80,15 @@ export const authOptions: AuthOptions = {
 
             const data = await res.json();
             
-            // The backend returns { user, access_token, refresh_token }
-            // We need to return the user object to NextAuth
+            // The backend returns { user: { ID, FullName, Email, Role } }
+            // We must map this to an object that NextAuth understands.
             if (data && data.user) {
-              return data.user;
+              return {
+                id: data.user.ID,
+                name: data.user.FullName,
+                email: data.user.Email,
+                role: data.user.Role,
+              };
             }
 
             return null;
