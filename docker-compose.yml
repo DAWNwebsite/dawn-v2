@@ -59,8 +59,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    env_file:
-      - ./backend/dawn-lms/.env
     networks:
       - dawn-network
     restart: unless-stopped
@@ -79,8 +77,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    env_file:
-      - ./backend/dawn-lms/.env
     command: ["/app/main", "--seed"]
 
   # Next.js Frontend
