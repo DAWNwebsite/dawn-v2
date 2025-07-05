@@ -8,6 +8,7 @@ import (
 	//	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -106,7 +107,11 @@ func SignUp(c *gin.Context) {
 	db := config.DB()
 	err = db.Create(&newAccount).Error
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			c.JSON(http.StatusConflict, gin.H{"error": "User with this email already exists."})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account."})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Account created successfully"})
