@@ -2,6 +2,7 @@ package routers
 
 import (
 	"aida/auth"
+	"aida/config"
 	"aida/models"
 	"fmt"
 
@@ -22,15 +23,16 @@ func CreateStudentProfile(c *gin.Context) {
 		return
 	}
 
+	db := config.DB()
 	oldRec := models.Student{}
-	err = DB.Where(models.Student{ProfileID: user.ID}).First(&oldRec).Error
+	err = db.Where(models.Student{ProfileID: user.ID}).First(&oldRec).Error
 	if err != nil {
 		NewStudent := models.Student{
 			ID:        uuid.New(),
 			Profile:   user,
 			ProfileID: user.ID,
 		}
-		err = DB.Create(&NewStudent).Preload("Profile").Error
+		err = db.Create(&NewStudent).Preload("Profile").Error
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err.Error())
 			return
@@ -49,7 +51,8 @@ func GetStudents(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
-	err = DB.Preload("Profile").Omit("Profile.Password").Find(&Students).Error
+	db := config.DB()
+	err = db.Preload("Profile").Omit("Profile.Password").Find(&Students).Error
 	if err != nil {
 		c.JSON(http.StatusBadGateway, err.Error())
 		return
@@ -63,8 +66,9 @@ func GetStudentProfile(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
+	db := config.DB()
 	student := models.Student{}
-	err = DB.Where(&models.Student{ProfileID: user.ID}).Preload("Profile").
+	err = db.Where(&models.Student{ProfileID: user.ID}).Preload("Profile").
 		Preload("Preferences").
 		Preload("Courses").
 		Preload("Challenges").
@@ -84,9 +88,10 @@ func GetASudent(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
+	db := config.DB()
 	student := models.Student{}
 	fmt.Println("url param is: ", id)
-	err = DB.Where("ID", id).Or("profile_id", id).Preload("Profile").
+	err = db.Where("ID", id).Or("profile_id", id).Preload("Profile").
 		Preload("Preferences").
 		Preload("Courses").
 		Preload("Challenges").
@@ -106,14 +111,15 @@ func DeleteStudentProfile(c *gin.Context) {
 		return
 	}
 	student_id := c.Query("id")
+	db := config.DB()
 	student := models.Student{}
 	if user.Role == "Admin" {
-		err = DB.First(&student, "ID", student_id).First(&student).Error
+		err = db.First(&student, "ID", student_id).First(&student).Error
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
-		err = DB.Delete(&student).Error
+		err = db.Delete(&student).Error
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err.Error())
 			return

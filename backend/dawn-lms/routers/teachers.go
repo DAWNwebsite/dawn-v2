@@ -2,6 +2,7 @@ package routers
 
 import (
 	"aida/auth"
+	"aida/config"
 	"aida/models"
 	"net/http"
 
@@ -20,14 +21,16 @@ func CreateTeachers(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "Your'\re unauthorized to perform this action")
 		return
 	}
+
+	db := config.DB()
 	tUser := models.User{}
-	err = DB.First(&tUser, "ID = ?", id).Error
+	err = db.First(&tUser, "ID = ?", id).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "This user was not found")
 		return
 	}
 	exitsTeacher := models.Teacher{}
-	err = DB.First(&exitsTeacher, "ProfileID = ?", tUser.ID).Error
+	err = db.First(&exitsTeacher, "ProfileID = ?", tUser.ID).Error
 	if err == nil {
 		c.JSON(http.StatusConflict, "user already exists as teacher ")
 		return
@@ -39,7 +42,7 @@ func CreateTeachers(c *gin.Context) {
 		Profile:   tUser,
 	}
 
-	err = DB.Create(&newTeacher).Error
+	err = db.Create(&newTeacher).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -53,8 +56,9 @@ func GetAllTeachers(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "unauthorized")
 		return
 	}
+	db := config.DB()
 	teachers := []models.Teacher{}
-	err = DB.Order("created_at DESC").Find(&teachers).Error
+	err = db.Order("created_at DESC").Find(&teachers).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -69,8 +73,9 @@ func GetOneTeacher(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
+	db := config.DB()
 	teacher := models.Teacher{}
-	err = DB.Preload("Profile").
+	err = db.Preload("Profile").
 		Preload("Courses").
 		First(&teacher, "ID = ?", id).Error
 	if err != nil {

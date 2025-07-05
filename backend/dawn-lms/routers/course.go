@@ -2,6 +2,7 @@ package routers
 
 import (
 	"aida/auth"
+	"aida/config"
 	"aida/models"
 	"fmt"
 	"net/http"
@@ -30,7 +31,8 @@ func CreateCourse(c *gin.Context) {
 			Description: courseInput.Description,
 		}
 
-		err = DB.Create(&newCourse).Error
+		db := config.DB()
+		err = db.Create(&newCourse).Error
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err.Error())
 			return
@@ -47,8 +49,9 @@ func GetAllCourses(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
+	db := config.DB()
 	courses := []models.Course{}
-	err = DB.Preload("Students").
+	err = db.Preload("Students").
 		Preload("Students.Profile").
 		Preload("TeacherS").
 		Preload("TeacherS.Profile").
@@ -66,9 +69,10 @@ func GetOneCourse(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
+	db := config.DB()
 	course := models.Course{}
 	id := c.Param("id")
-	err = DB.Preload("Students").
+	err = db.Preload("Students").
 		Preload("Students.Profile").
 		Preload("TeacherS").
 		Preload("TeacherS.Profile").
@@ -91,7 +95,8 @@ func DeleteCourse(c *gin.Context) {
 	if user.Role != "Admin" {
 		c.JSON(http.StatusUnauthorized, "Unauthorized to perform this action!")
 	}
-	err = DB.Delete(&course, "ID = ?", id).Error
+	db := config.DB()
+	err = db.Delete(&course, "ID = ?", id).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
 		return
@@ -106,6 +111,7 @@ func AddCourseToStudent(c *gin.Context) {
 		return
 	}
 
+	db := config.DB()
 	course := models.Course{}
 	student := models.Student{}
 	student_id := c.Query("student_id")
@@ -114,12 +120,12 @@ func AddCourseToStudent(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "unauthorized to perform this action!")
 		return
 	}
-	err = DB.First(&course, "id =  ?", courseID).Error
+	err = db.First(&course, "id =  ?", courseID).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "couse not found"})
 		return
 	}
-	err = DB.Preload("Courses").First(&student, "Id = ?", student_id).Error
+	err = db.Preload("Courses").First(&student, "Id = ?", student_id).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "student not found")
 		return
@@ -131,7 +137,7 @@ func AddCourseToStudent(c *gin.Context) {
 			return
 		}
 	}
-	err = DB.Model(&student).Association("Courses").Append(&course)
+	err = db.Model(&student).Association("Courses").Append(&course)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -146,6 +152,7 @@ func RemoveStudentFromCourse(c *gin.Context) {
 		return
 	}
 
+	db := config.DB()
 	course := models.Course{}
 	student := models.Student{}
 	student_id := c.Query("student_id")
@@ -154,12 +161,12 @@ func RemoveStudentFromCourse(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "unauthorized to perform this action!")
 		return
 	}
-	err = DB.First(&course, "id =  ?", courseID).Error
+	err = db.First(&course, "id =  ?", courseID).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "couse not found"})
 		return
 	}
-	err = DB.Preload("Courses").First(&student, "Id = ?", student_id).Error
+	err = db.Preload("Courses").First(&student, "Id = ?", student_id).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "student not found")
 		return
@@ -177,7 +184,7 @@ func RemoveStudentFromCourse(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "this course does not exist in the list of courses for this student!")
 		return
 	}
-	err = DB.Model(&student).Association("Courses").Delete(&course)
+	err = db.Model(&student).Association("Courses").Delete(&course)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -196,9 +203,10 @@ func GetCourseStudents(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, "Not Unauthorized to execute this action")
 		return
 	}
+	db := config.DB()
 	course := models.Course{}
 
-	err = DB.Preload("Students").
+	err = db.Preload("Students").
 		Preload("Students.Profile").
 		Preload("Students.Preferences").
 		Preload("Students.Courses").
@@ -225,14 +233,15 @@ func AddTeacherToCourse(c *gin.Context) {
 	tId := c.Query("teacherID")
 
 	courseID := c.Param("id")
+	db := config.DB()
 	teacher := models.Teacher{}
 	course := models.Course{}
-	err = DB.First(&teacher, "ID = ?", tId).Error
+	err = db.First(&teacher, "ID = ?", tId).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "Teacher profile not found")
 		return
 	}
-	err = DB.First(&course, "ID = ?", courseID).Error
+	err = db.First(&course, "ID = ?", courseID).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "Course not found!")
 		return
@@ -248,7 +257,7 @@ func AddTeacherToCourse(c *gin.Context) {
 		return
 	}
 
-	err = DB.Model(&course).Association("TeacherS").Append(&teacher)
+	err = db.Model(&course).Association("TeacherS").Append(&teacher)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -269,14 +278,15 @@ func RemoveTeacherFromCourse(c *gin.Context) {
 
 	tId := c.Query("teacherID")
 	courseID := c.Param("id")
+	db := config.DB()
 	teacher := models.Teacher{}
 	course := models.Course{}
-	err = DB.First(&teacher, "ID = ?", tId).Error
+	err = db.First(&teacher, "ID = ?", tId).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "Teacher profile not found")
 		return
 	}
-	err = DB.First(&course, "ID = ?", courseID).Error
+	err = db.First(&course, "ID = ?", courseID).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, "Course not found!")
 		return
@@ -292,7 +302,7 @@ func RemoveTeacherFromCourse(c *gin.Context) {
 		return
 	}
 
-	err = DB.Model(&course).Association("TeacherS").Delete(&teacher)
+	err = db.Model(&course).Association("TeacherS").Delete(&teacher)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -308,8 +318,9 @@ func GetAllCourseTeachers(c *gin.Context) {
 	}
 
 	courseID := c.Param("id")
+	db := config.DB()
 	course := models.Course{}
-	err = DB.Preload("TeacherS").First(&course, "ID = ?", courseID).Error
+	err = db.Preload("TeacherS").First(&course, "ID = ?", courseID).Error
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
 		return
