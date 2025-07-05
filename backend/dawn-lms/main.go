@@ -95,8 +95,16 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	r.Run(":" + port)
 
-	//
-	///go build -tags netgo -ldflags '-s -w' -o app
+	// Run the server in a goroutine so it doesn't block
+	go func() {
+		if err := r.Run(":" + port); err != nil {
+			log.Fatalf("Failed to run server: %v", err)
+		}
+	}()
+
+	log.Println("Backend service started. Waiting for requests...")
+
+	// Block the main thread indefinitely to keep the service alive.
+	select {}
 }
