@@ -103,6 +103,8 @@ services:
         - REDIS_PORT=6379
         - REDIS_PASSWORD=${REDIS_PASSWORD:-dawn_redis_pass}
     container_name: dawn-frontend
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-a-very-secret-nextauth-secret-key}
