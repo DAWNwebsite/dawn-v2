@@ -68,8 +68,8 @@ export default function SignUpPage() {
         // This error comes from the NextAuth `authorize` function
         setError(result.error)
       } else if (result?.ok) {
-        // Signup successful, redirect to the login page with a success message
-        router.push("/auth/signin?message=Signup successful! Please log in.")
+        // Signup and automatic login were successful, redirect to the dashboard
+        router.push("/dashboard")
       }
     } catch (error: any) {
       setError(error.message || "An unexpected error occurred. Please try again.")
