@@ -100,8 +100,9 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // The user object is only available on the first login.
-      // Persist the user data to the token.
+      // This is the crucial part. After a successful sign-in, the `user` object 
+      // from the `authorize` function is passed here ONCE.
+      // We must persist this data to the token.
       if (user) {
         token.id = user.id
         token.name = user.name
@@ -111,13 +112,13 @@ export const authOptions: AuthOptions = {
       return token
     },
     async session({ session, token }) {
-      // The session object is what the client-side receives.
-      // We are taking the data from the token and putting it into the session.
+      // The session callback is called on every page load.
+      // We take the data we stored in the token and make it available to the frontend.
       if (token && session.user) {
-        session.user.id = token.id as string
-        session.user.name = token.name as string
-        session.user.email = token.email as string
-        session.user.role = token.role as string
+        session.user.id = token.id
+        session.user.name = token.name
+        session.user.email = token.email
+        session.user.role = token.role
       }
       return session
     }
