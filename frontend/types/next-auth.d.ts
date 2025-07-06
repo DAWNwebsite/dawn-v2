@@ -21,9 +21,11 @@ declare module "next-auth" {
 }
 
 declare module "next-auth/jwt" {
-  // Extend the built-in JWT object
+  // Extend the built-in JWT object to include all our custom properties
   interface JWT extends DefaultJWT {
     id: string
     role: string
+    name?: string | null
+    email?: string | null
   }
 } 
