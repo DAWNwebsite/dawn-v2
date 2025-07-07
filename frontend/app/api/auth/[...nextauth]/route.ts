@@ -45,15 +45,11 @@ export const authOptions: AuthOptions = {
             const signupData = await signupRes.json();
 
             if (!signupRes.ok) {
-              // If signup fails (e.g., user already exists), throw an error
               throw new Error(signupData.error || 'Signup failed');
             }
             
-            // If signup is successful, immediately try to log the new user in
-            // Fall through to the sign-in logic
-            
           } catch (error: any) {
-            // Re-throw the error to be caught by the frontend
+            console.error("[AUTHORIZE_SIGNUP] Error:", error);
             throw new Error(error.message);
           }
         }
@@ -76,20 +72,22 @@ export const authOptions: AuthOptions = {
 
           const data = await res.json();
           
-          // The backend returns { user: { ID, FullName, Email, Role } }
-          // We must map this to an object that NextAuth understands.
           if (data && data.user) {
-            return {
+            const user = {
               id: data.user.ID,
               name: data.user.FullName,
               email: data.user.Email,
               role: data.user.Role,
             };
+            console.log("[AUTHORIZE] Success, returning user:", JSON.stringify(user, null, 2));
+            return user;
           }
 
+          console.log("[AUTHORIZE] Failed, returning null");
           return null;
 
         } catch (error: any) {
+          console.error("[AUTHORIZE_LOGIN] Error:", error);
           throw new Error(error.message);
         }
       }
@@ -100,26 +98,27 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // This is the crucial part. After a successful sign-in, the `user` object 
-      // from the `authorize` function is passed here ONCE.
-      // We must persist this data to the token.
+      console.log("[JWT] Callback fired.");
       if (user) {
+        console.log("[JWT] User object present. Persisting to token.");
         token.id = user.id
         token.name = user.name
         token.email = user.email
         token.role = user.role
       }
+      console.log("[JWT] Returning Token:", JSON.stringify(token, null, 2));
       return token
     },
     async session({ session, token }) {
-      // The session callback is called on every page load.
-      // We take the data we stored in the token and make it available to the frontend.
+      console.log("[SESSION] Callback fired.");
       if (token && session.user) {
-        session.user.id = token.id
-        session.user.name = token.name
-        session.user.email = token.email
-        session.user.role = token.role
+        session.user.id = token.id as string;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.role = token.role as string;
+        console.log("[SESSION] Session user updated from token.");
       }
+      console.log("[SESSION] Returning Session:", JSON.stringify(session, null, 2));
       return session
     }
   },
