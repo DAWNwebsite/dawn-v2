@@ -53,11 +53,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api/ (API routes, other than public ones)
+     * - api/auth (NextAuth routes - CRITICAL: Don't interfere with auth flow)
+     * - api/public (public API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - images/ (public images)
      */
-    '/((?!api/auth/session|api/public|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|api/public|_next/static|_next/image|favicon.ico|images).*)',
   ],
 }; 
