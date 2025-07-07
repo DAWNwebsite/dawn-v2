@@ -1,25 +1,48 @@
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { ChatGroq } from "@langchain/groq";
-import { PineconeStore } from '@langchain/community/vectorstores/pinecone';
-import { pineconeClient } from './pinecone';
-import { 
-  SearchQuery, 
-  SearchResult, 
-  RAGResponse, 
-  RAGContext,
-  UserContext 
+import { getGroqChatCompletion } from './groq';
+import {
+  SearchQuery,
+  SearchResult,
+  RAGResponse,
+  DocumentMetadata,
+  ContentType
 } from './types';
+import { PineconeStore } from "@langchain/pinecone";
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import { formatDocumentsAsString } from "langchain/util/document";
+import { Document } from "langchain/document";
+import { pinecone } from './pinecone';
+import { ChatGroq } from "@langchain/groq";
 
-// Initialize Groq chat client
-const chatClient = new ChatGroq({
-  apiKey: process.env.GROQ_API_KEY,
-  model: "llama3-8b-8192", // A good, fast model for RAG
-});
+export type UserContext = {
+  userId: string;
+  role?: 'student' | 'parent' | 'teacher' | 'admin';
+  learningStyle?: 'visual' | 'auditory' | 'kinesthetic' | 'mixed';
+  difficultyLevel?: 'beginner' | 'intermediate' | 'advanced';
+  preferredSubjects?: string[];
+  accessibility?: {
+    fontSize?: number;
+    contrastMode?: 'default' | 'high' | 'dark';
+    prefersReducedMotion?: boolean;
+  };
+};
 
-// Initialize embeddings using our centralized function
+export type RAGContext = {
+  context: string;
+  query: string;
+  userContext: UserContext;
+};
+
 const embeddings = new GoogleGenerativeAIEmbeddings({
   apiKey: process.env.GOOGLE_API_KEY,
   model: "text-embedding-004",
+});
+
+const chatClient = new ChatGroq({
+  apiKey: process.env.GROQ_API_KEY,
+  model: "llama3-8b-8192",
 });
 
 /**
@@ -38,322 +61,118 @@ export class RAGSearchEngine {
    */
   private async initializeVectorStore() {
     try {
-      const index = pineconeClient.Index(process.env.PINECONE_INDEX_NAME!);
+      const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
       this.vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
-        pineconeIndex: index,
+        pineconeIndex,
       });
+      console.log('Vector store initialized successfully.');
     } catch (error) {
-      console.error('Failed to initialize vector store:', error);
-      throw error;
+      console.error('Error initializing vector store:', error);
     }
   }
 
   /**
    * Perform semantic search and generate AI response
    */
-  async search(
-    query: SearchQuery, 
-    userContext?: UserContext
-  ): Promise<RAGResponse> {
+  public async search(searchQuery: SearchQuery, userContext: UserContext): Promise<RAGResponse> {
+    if (!this.vectorStore) {
+      throw new Error('Vector store is not initialized.');
+    }
+
     const startTime = Date.now();
 
-    try {
-      // Ensure vector store is initialized
-      if (!this.vectorStore) {
-        await this.initializeVectorStore();
-      }
+    const sources = await this.performSemanticSearch(searchQuery, userContext);
+    const context = this.buildContext(sources);
+    const generatedAnswer = await this.generateResponse(context, searchQuery.query, userContext);
 
-      // Perform similarity search
-      const searchResults = await this.performSemanticSearch(query);
+    const endTime = Date.now();
+    const searchTime = endTime - startTime;
 
-      // Generate AI response using retrieved context
-      const ragResponse = await this.generateResponse(
-        query.query,
-        searchResults,
-        userContext
-      );
-
-      // Calculate search time
-      const searchTime = Date.now() - startTime;
-
-      return {
-        ...ragResponse,
-        searchTime,
-      };
-
-    } catch (error) {
-      console.error('RAG search failed:', error);
-      throw error;
-    }
+    return {
+      query: searchQuery.query,
+      answer: generatedAnswer,
+      sources,
+      searchTime,
+      confidence: this.calculateConfidence(sources),
+    };
   }
 
   /**
    * Perform semantic search using vector similarity
    */
-  private async performSemanticSearch(query: SearchQuery): Promise<SearchResult[]> {
-    try {
-      if (!this.vectorStore) {
-        throw new Error('Vector store not initialized');
-      }
-
-      // Build metadata filter
-      const filter = this.buildMetadataFilter(query.filters);
-
-      // Perform similarity search
-      const results = await this.vectorStore.similaritySearchWithScore(
-        query.query,
-        query.topK || 10,
-        filter
-      );
-
-      // Transform results to our format
-      return results.map(([doc, score], index) => ({
-        id: doc.metadata.id || `result_${index}`,
-        content: doc.pageContent,
-        metadata: doc.metadata,
-        score: score,
-      }));
-
-    } catch (error) {
-      console.error('Semantic search failed:', error);
-      throw error;
+  private async performSemanticSearch(searchQuery: SearchQuery, userContext: UserContext): Promise<SearchResult[]> {
+    if (!this.vectorStore) {
+      throw new Error('Vector store is not initialized.');
     }
+
+    const results = await this.vectorStore.similaritySearchWithScore(searchQuery.query, searchQuery.topK, searchQuery.filters);
+
+    return results.map(([doc, score]) => ({
+      id: (doc.metadata as DocumentMetadata).documentId,
+      content: doc.pageContent,
+      metadata: doc.metadata as DocumentMetadata,
+      score,
+    }));
   }
 
-  /**
-   * Build metadata filter for Pinecone query
-   */
-  private buildMetadataFilter(filters?: any): any {
-    if (!filters) return {};
-
-    const filter: any = {};
-
-    // Content type filter
-    if (filters.contentType && filters.contentType.length > 0) {
-      filter.contentType = { $in: filters.contentType };
-    }
-
-    // Subject filter
-    if (filters.subject && filters.subject.length > 0) {
-      filter.subject = { $in: filters.subject };
-    }
-
-    // Grade level filter
-    if (filters.gradeLevel && filters.gradeLevel.length > 0) {
-      filter.gradeLevel = { $in: filters.gradeLevel };
-    }
-
-    // Difficulty level filter
-    if (filters.difficultyLevel && filters.difficultyLevel.length > 0) {
-      filter.difficultyLevel = { $in: filters.difficultyLevel };
-    }
-
-    // Disability types filter
-    if (filters.disabilityTypes && filters.disabilityTypes.length > 0) {
-      filter.disabilityTypes = { $in: filters.disabilityTypes };
-    }
-
-    // Tags filter
-    if (filters.tags && filters.tags.length > 0) {
-      filter.tags = { $in: filters.tags };
-    }
-
-    return filter;
+  private buildContext(sources: SearchResult[]): string {
+    return sources
+      .map(source => `Source (ID: ${source.id}, Score: ${source.score.toFixed(2)}):\n${source.content}`)
+      .join("\n\n---\n\n");
   }
 
   /**
    * Generate AI response using retrieved context
    */
-  private async generateResponse(
-    query: string,
-    searchResults: SearchResult[],
-    userContext?: UserContext
-  ): Promise<RAGResponse> {
-    try {
-      // Build context from search results
-      const context = this.buildRAGContext(query, searchResults, userContext);
+  private async generateResponse(context: string, query: string, userContext: UserContext): Promise<string> {
+    const template = `
+      You are DAWN AI, a friendly and helpful AI learning assistant.
+      Your role is to provide clear, concise, and personalized answers based on the provided context.
+      ---
+      CONTEXT:
+      {context}
+      ---
+      USER QUERY:
+      {query}
+      ---
+      USER PROFILE:
+      - Role: ${userContext.role}
+      - Learning Style: ${userContext.learningStyle}
+      - Preferred Difficulty: ${userContext.difficultyLevel}
+      ---
+      INSTRUCTIONS:
+      1.  Synthesize the information from the context to directly answer the user's query.
+      2.  Do not make up information. If the context does not contain the answer, say "I'm sorry, but I couldn't find a specific answer in the provided materials."
+      3.  Adapt your language and tone based on the user's profile. For example, use simpler language for a student, more technical language for a teacher, and focus on outcomes for a parent.
+      4.  Be encouraging and supportive.
 
-      // Generate response using Groq
-      const completion = await chatClient.invoke([
-        ['system', this.buildSystemPrompt(userContext)],
-        ['human', this.buildUserPrompt(context)],
-      ]);
+      ANSWER:
+    `;
 
-      const answer = completion.content as string || 'No response generated';
+    const prompt = PromptTemplate.fromTemplate(template);
 
-      // Calculate confidence based on search results relevance
-      const confidence = this.calculateConfidence(searchResults);
+    const chain = RunnableSequence.from([
+      {
+        context: async () => context,
+        query: () => query,
+        userContext: () => userContext,
+      },
+      prompt,
+      chatClient,
+      new StringOutputParser(),
+    ]);
 
-      // Extract sources for citation
-      const sources = this.extractSources(searchResults);
-
-      // Generate follow-up questions
-      const followUpQuestions = this.generateFollowUpQuestions(query, searchResults);
-
-      return {
-        answer,
-        sources,
-        confidence,
-        followUpQuestions,
-      };
-
-    } catch (error) {
-      console.error('Response generation failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Build RAG context for prompt
-   */
-  private buildRAGContext(
-    query: string,
-    searchResults: SearchResult[],
-    userContext?: UserContext
-  ): RAGContext {
-    return {
-      query,
-      relevantDocs: searchResults,
-      userProfile: userContext ? {
-        learningStyle: userContext.difficultyLevel,
-        difficultyLevel: userContext.difficultyLevel,
-        disabilityTypes: userContext.learningDisabilities,
-        preferredSubjects: userContext.preferredSubjects,
-      } : undefined,
-    };
-  }
-
-  /**
-   * Build system prompt for AI response generation
-   */
-  private buildSystemPrompt(userContext?: UserContext): string {
-    let prompt = `You are AIDA, an AI assistant specialized in supporting neurodivergent K-12 learners. You provide educational guidance based on research-backed information.
-
-Key Principles:
-- Provide clear, accessible explanations appropriate for the user's level
-- Include specific accommodations and strategies for learning disabilities
-- Reference credible educational sources when possible
-- Maintain an encouraging and supportive tone
-- Break down complex concepts into manageable steps`;
-
-    if (userContext) {
-      prompt += `\n\nUser Context:`;
-      if (userContext.role) prompt += `\n- Role: ${userContext.role}`;
-      if (userContext.learningDisabilities?.length) {
-        prompt += `\n- Learning disabilities: ${userContext.learningDisabilities.join(', ')}`;
-      }
-      if (userContext.difficultyLevel) {
-        prompt += `\n- Difficulty level: ${userContext.difficultyLevel}`;
-      }
-      if (userContext.preferredSubjects?.length) {
-        prompt += `\n- Preferred subjects: ${userContext.preferredSubjects.join(', ')}`;
-      }
-      if (userContext.age) prompt += `\n- Age: ${userContext.age}`;
-    }
-
-    return prompt;
-  }
-
-  /**
-   * Build user prompt with context
-   */
-  private buildUserPrompt(context: RAGContext): string {
-    const { query, relevantDocs } = context;
-
-    let prompt = `Question: ${query}\n\nRelevant Information:\n`;
-
-    relevantDocs.forEach((doc, index) => {
-      prompt += `\n[Source ${index + 1}] ${doc.metadata.title || 'Educational Content'}\n`;
-      prompt += `${doc.content}\n`;
-      if (doc.metadata.source) prompt += `Source: ${doc.metadata.source}\n`;
-    });
-
-    prompt += `\nBased on the above information, please provide a comprehensive answer to the question. Include:
-1. A clear, direct answer
-2. Specific strategies or accommodations if relevant
-3. Examples or practical applications
-4. References to the sources provided
-
-Make your response educational, supportive, and tailored to neurodivergent learners.`;
-
-    return prompt;
+    const result = await chain.invoke({ context, query, userContext });
+    return result;
   }
 
   /**
    * Calculate confidence score based on search results
    */
-  private calculateConfidence(searchResults: SearchResult[]): number {
-    if (searchResults.length === 0) return 0;
-
-    // Calculate average similarity score
-    const avgScore = searchResults.reduce((sum, result) => sum + result.score, 0) / searchResults.length;
-    
-    // Convert to confidence percentage (higher similarity = higher confidence)
-    // Pinecone cosine similarity ranges from -1 to 1, we normalize to 0-100
-    return Math.max(0, Math.min(100, (avgScore + 1) * 50));
-  }
-
-  /**
-   * Extract sources for citation
-   */
-  private extractSources(searchResults: SearchResult[]): RAGResponse['sources'] {
-    return searchResults.slice(0, 5).map(result => ({
-      title: result.metadata.title || 'Educational Content',
-      contentType: result.metadata.contentType,
-      relevanceScore: Math.round(result.score * 100) / 100,
-      excerpt: this.truncateText(result.content, 150),
-    }));
-  }
-
-  /**
-   * Generate follow-up questions based on query and results
-   */
-  private generateFollowUpQuestions(query: string, searchResults: SearchResult[]): string[] {
-    const questions: string[] = [];
-
-    // Extract subjects and topics from results
-    const subjects = new Set(
-      searchResults
-        .map(r => r.metadata.subject)
-        .filter(Boolean)
-    );
-
-    const contentTypes = new Set(
-      searchResults
-        .map(r => r.metadata.contentType)
-        .filter(Boolean)
-    );
-
-    // Generate contextual follow-up questions
-    if (subjects.size > 0) {
-      const subject = Array.from(subjects)[0];
-      questions.push(`What are effective teaching strategies for ${subject}?`);
-    }
-
-    if (contentTypes.has('accommodation')) {
-      questions.push('What other accommodations might be helpful?');
-    }
-
-    if (contentTypes.has('assessment')) {
-      questions.push('How can I prepare for similar assessments?');
-    }
-
-    // Add general follow-up questions
-    questions.push(
-      'Can you provide more specific examples?',
-      'What resources would help me learn more about this topic?',
-      'How can I apply this information in practice?'
-    );
-
-    return questions.slice(0, 3); // Return top 3 questions
-  }
-
-  /**
-   * Truncate text to specified length
-   */
-  private truncateText(text: string, maxLength: number): string {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + '...';
+  private calculateConfidence(sources: SearchResult[]): number {
+    if (sources.length === 0) return 0;
+    const totalScore = sources.reduce((sum, source) => sum + source.score, 0);
+    return totalScore / sources.length;
   }
 
   /**
@@ -386,6 +205,69 @@ Make your response educational, supportive, and tailored to neurodivergent learn
       console.error('Failed to get suggestions:', error);
       return [];
     }
+  }
+
+  private examples: SearchResult[] = [
+    {
+      id: "example_1",
+      content: "This is an example of a search result.",
+      metadata: {
+        title: "Example 1",
+        contentType: ContentType.CONCEPT,
+        subject: "Science",
+        gradeLevel: "Middle School",
+        difficultyLevel: "Intermediate",
+        disabilityTypes: [],
+        tags: [],
+        source: "Example Source",
+      },
+      score: 0.85,
+    },
+    {
+      id: "example_2",
+      content: "This is another example of a search result.",
+      metadata: {
+        title: "Example 2",
+        contentType: ContentType.ACTIVITY,
+        subject: "History",
+        gradeLevel: "High School",
+        difficultyLevel: "Advanced",
+        disabilityTypes: [],
+        tags: [],
+        source: "Example Source",
+      },
+      score: 0.75,
+    },
+    {
+      id: "example_3",
+      content: "This is a third example of a search result.",
+      metadata: {
+        title: "Example 3",
+        contentType: ContentType.QUIZ,
+        subject: "Math",
+        gradeLevel: "Middle School",
+        difficultyLevel: "Beginner",
+        disabilityTypes: [],
+        tags: [],
+        source: "Example Source",
+      },
+      score: 0.65,
+    },
+  ];
+
+  getExamples(): SearchResult[] {
+    if (!this.examples || this.examples.length === 0) {
+      return [];
+    }
+
+    const results: SearchResult[] = this.examples.map(example => ({
+      id: example.id,
+      content: example.content,
+      metadata: example.metadata as DocumentMetadata,
+      score: example.score || 0,
+    }));
+
+    return results;
   }
 }
 

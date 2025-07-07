@@ -75,15 +75,24 @@ model VerificationToken {
 }
 
 model LearningProfile {
-  id                   String   @id @default(cuid())
-  userId               String   @unique @map("user_id")
-  learningDisabilities Json     @map("learning_disabilities")
-  learningStyle        String?  @map("learning_style")
-  difficultyLevel      String   @default("beginner") @map("difficulty_level")
-  preferredSubjects    Json     @map("preferred_subjects")
-  accommodations       Json
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  id                         String    @id @default(cuid())
+  userId                     String    @unique @map("user_id")
+  learningStyle              String    @default("mixed") @map("learning_style")
+  preferredPace              String    @default("medium") @map("preferred_pace")
+  attentionSpanMinutes       Int       @default(20) @map("attention_span_minutes")
+  subjectStrengthsWeaknesses Json      @map("subject_strengths_weaknesses")
+  preferredTimeOfDay         String    @default("morning") @map("preferred_time_of_day")
+  breakFrequencyMinutes      Int       @default(30) @map("break_frequency_minutes")
+  multitaskingPreference     Boolean   @default(false) @map("multitasking_preference")
+  sensoryProcessingNotes     String    @map("sensory_processing_notes")
+  communicationPreferences   String    @default("mixed") @map("communication_preferences")
+  executiveFunctionSupport   Boolean   @default(false) @map("executive_function_support")
+  preferredRewardSystem      String    @default("progress") @map("preferred_reward_system")
+  interestAreas              String    @map("interest_areas")
+  feedbackStyle              String    @default("constructive") @map("feedback_style")
+  assessmentFormat           String    @default("mixed") @map("assessment_format")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -123,20 +132,18 @@ model ParentalConsent {
 }
 
 model AccessibilityPreferences {
-  id                   String   @id @default(cuid())
-  userId               String   @unique @map("user_id")
-  highContrast         Boolean  @default(false) @map("high_contrast")
-  largeText            Boolean  @default(false) @map("large_text")
-  reducedMotion        Boolean  @default(false) @map("reduced_motion")
-  screenReader         Boolean  @default(false) @map("screen_reader")
-  keyboardNavigation   Boolean  @default(false) @map("keyboard_navigation")
-  colorBlindFriendly   Boolean  @default(false) @map("color_blind_friendly")
-  dyslexiaFriendly     Boolean  @default(false) @map("dyslexia_friendly")
-  focusIndicators      Boolean  @default(true) @map("focus_indicators")
-  simplifiedLayout     Boolean  @default(false) @map("simplified_layout")
-  textToSpeech         Boolean  @default(false) @map("text_to_speech")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(cuid())
+  userId                String   @unique @map("user_id")
+  fontSize              Int      @default(16) @map("font_size")
+  contrastMode          String   @default("default") @map("contrast_mode")
+  enableTextToSpeech    Boolean  @default(false) @map("enable_text_to_speech")
+  prefersReducedMotion  Boolean  @default(false) @map("prefers_reduced_motion")
+  colorBlindnessSupport String   @default("none") @map("color_blindness_support")
+  keyboardNavigation    Boolean  @default(true) @map("keyboard_navigation")
+  screenReaderOptimized Boolean  @default(false) @map("screen_reader_optimized")
+  focusIndicatorStyle   String   @default("default") @map("focus_indicator_style")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
