@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
 
   // Define public, protected, and auth routes
   const publicRoutes = ['/', '/about', '/contact', '/students', '/educators'];
-  const protectedRoutes = ['/dashboard', '/profile', '/assessments', 'learning'];
+  const protectedRoutes = ['/dashboard', '/profile', '/assessments', '/learning'];
   const authRoutes = ['/auth/signin', '/auth/signup', '/auth/parental-consent'];
 
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/api/public');
