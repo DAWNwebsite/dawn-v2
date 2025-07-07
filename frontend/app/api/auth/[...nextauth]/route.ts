@@ -29,7 +29,6 @@ export const authOptions: AuthOptions = {
         // --- SIGN UP ---
         if (credentials.action === 'signup') {
           try {
-            // First, attempt to create the new user
             const signupRes = await fetch(`${apiBaseUrl}/auth/signup`, {
               method: 'POST',
               body: JSON.stringify({
@@ -49,7 +48,6 @@ export const authOptions: AuthOptions = {
             }
             
           } catch (error: any) {
-            console.error("[AUTHORIZE_SIGNUP] Error:", error);
             throw new Error(error.message);
           }
         }
@@ -66,13 +64,12 @@ export const authOptions: AuthOptions = {
           });
 
           const rawResponseText = await res.text();
-          console.log("[AUTHORIZE] RAW RESPONSE FROM BACKEND:", rawResponseText);
           const data = JSON.parse(rawResponseText);
 
           if (!res.ok) {
             throw new Error(data.error || 'Login failed');
           }
-
+          
           if (data && data.user) {
             const user = {
               id: data.user.id,
@@ -82,15 +79,12 @@ export const authOptions: AuthOptions = {
               accessToken: data.access_token,
               refreshToken: data.refresh_token,
             };
-            console.log("[AUTHORIZE] Success, returning user:", JSON.stringify(user, null, 2));
             return user;
           }
 
-          console.log("[AUTHORIZE] Failed, returning null");
           return null;
 
         } catch (error: any) {
-          console.error("[AUTHORIZE_LOGIN] Error:", error);
           throw new Error(error.message);
         }
       }
@@ -101,9 +95,7 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("[JWT] Callback fired.");
       if (user) {
-        console.log("[JWT] User object present. Persisting to token.");
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
@@ -111,21 +103,17 @@ export const authOptions: AuthOptions = {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
       }
-      console.log("[JWT] Returning Token:", JSON.stringify(token, null, 2));
       return token
     },
     async session({ session, token }) {
-      console.log("[SESSION] Callback fired.");
       if (token && session.user) {
-        session.user.id = token.id;
+        session.user.id = token.id || '';
         session.user.name = token.name;
         session.user.email = token.email;
-        session.user.role = token.role;
+        session.user.role = token.role || '';
         session.accessToken = token.accessToken;
         session.refreshToken = token.refreshToken;
-        console.log("[SESSION] Session user updated from token.");
       }
-      console.log("[SESSION] Returning Session:", JSON.stringify(session, null, 2));
       return session
     }
   },
@@ -134,6 +122,7 @@ export const authOptions: AuthOptions = {
     error: '/auth/error'
   },
   secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: false,
 }
 
 const handler = NextAuth(authOptions)
