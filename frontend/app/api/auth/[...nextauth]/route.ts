@@ -65,13 +65,14 @@ export const authOptions: AuthOptions = {
             headers: { "Content-Type": "application/json" }
           });
 
+          const rawResponseText = await res.text();
+          console.log("[AUTHORIZE] RAW RESPONSE FROM BACKEND:", rawResponseText);
+          const data = JSON.parse(rawResponseText);
+
           if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || 'Login failed');
+            throw new Error(data.error || 'Login failed');
           }
 
-          const data = await res.json();
-          
           if (data && data.user) {
             const user = {
               id: data.user.ID,
