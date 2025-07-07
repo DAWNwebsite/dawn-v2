@@ -11,21 +11,39 @@ interface CustomUser {
 }
 
 declare module "next-auth" {
-  // Extend the built-in session object
-  interface Session extends DefaultSession {
-    user: CustomUser & DefaultSession["user"]
+  /**
+   * The shape of the user object returned in the OAuth providers' `profile` callback,
+   * or the second parameter of the `session` callback, when using a database.
+   */
+  interface User extends DefaultUser {
+    role?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
   }
 
-  // Extend the built-in user object
-  interface User extends DefaultUser, CustomUser {}
+  /**
+   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+   */
+  interface Session extends DefaultSession {
+    user?: {
+      id: string;
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      role?: string | null
+    }
+    accessToken?: string | null
+    refreshToken?: string | null
+  }
 }
 
 declare module "next-auth/jwt" {
-  // Extend the built-in JWT object to include all our custom properties
+  /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
   interface JWT extends DefaultJWT {
-    id: string
-    role: string
-    name?: string | null
-    email?: string | null
+    /** OpenID ID Token */
+    id?: string | null
+    role?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
   }
 } 

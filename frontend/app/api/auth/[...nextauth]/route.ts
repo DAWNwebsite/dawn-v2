@@ -75,10 +75,12 @@ export const authOptions: AuthOptions = {
 
           if (data && data.user) {
             const user = {
-              id: data.user.ID,
-              name: data.user.FullName,
-              email: data.user.Email,
-              role: data.user.Role,
+              id: data.user.id,
+              name: data.user.fullname,
+              email: data.user.email,
+              role: data.user.role,
+              accessToken: data.access_token,
+              refreshToken: data.refresh_token,
             };
             console.log("[AUTHORIZE] Success, returning user:", JSON.stringify(user, null, 2));
             return user;
@@ -102,10 +104,12 @@ export const authOptions: AuthOptions = {
       console.log("[JWT] Callback fired.");
       if (user) {
         console.log("[JWT] User object present. Persisting to token.");
-        token.id = user.id
-        token.name = user.name
-        token.email = user.email
-        token.role = user.role
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.role = user.role;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
       }
       console.log("[JWT] Returning Token:", JSON.stringify(token, null, 2));
       return token
@@ -113,10 +117,12 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       console.log("[SESSION] Callback fired.");
       if (token && session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
-        session.user.role = token.role as string;
+        session.user.role = token.role;
+        session.accessToken = token.accessToken;
+        session.refreshToken = token.refreshToken;
         console.log("[SESSION] Session user updated from token.");
       }
       console.log("[SESSION] Returning Session:", JSON.stringify(session, null, 2));
