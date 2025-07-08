@@ -49,14 +49,14 @@ function Navbar() {
 
   return (
     <>
-      <div className="justify-center w-full mx-auto bg-background max-w-full">
+      <header className="bg-background sticky top-0 z-50 w-full border-b">
         <nav 
-          className="w-full h-[90px] flex justify-between items-center px-8 py-2 relative lg:px-12 md:px-3"
+          className="container flex items-center justify-between h-16 px-4 md:px-6"
           role="navigation"
           aria-label="Main navigation"
         >
           <Link
-            className="text-base leading-normal hover:text-accent-500 font-medium flex items-center gap-2 text-foreground focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg"
+            className="flex items-center gap-2"
             href="/"
             aria-label="DAWN AI Study - Home"
           >
@@ -70,15 +70,13 @@ function Navbar() {
             />
           </Link>
           
-          {/* Combined Desktop Navigation and Actions */}
-          <div className="hidden md:flex items-center space-x-6">
-            {/* Desktop Navigation */}
-            <ul className="flex items-center space-x-3 lg:space-x-4" role="menubar">
+          <div className="hidden md:flex items-center gap-4">
+            <ul className="flex items-center gap-4" role="menubar">
               {navigation.map((item) => (
                 <li key={item.name} role="none">
                   <Link
                     href={item.href || ""}
-                    className="text-sm lg:text-base leading-normal font-normal hover:text-[#620074] hover:font-medium transition-all ease-in-out duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg px-2 py-1"
+                    className="text-sm font-medium hover:underline underline-offset-4"
                     role="menuitem"
                   >
                     {item.name}
@@ -87,19 +85,14 @@ function Navbar() {
               ))}
             </ul>
             
-            {/* Desktop Actions */}
-            <div className="flex items-center space-x-3">
-              {/* Accessibility Toggle */}
+            <div className="flex items-center gap-2">
               <Button
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon"
                 onClick={() => setAccessibilityOpen(true)}
-                className="flex items-center space-x-1 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
                 aria-label="Open accessibility settings"
-                title="Accessibility Settings"
               >
-                <Settings className="w-4 h-4" />
-                <span className="sr-only">Accessibility</span>
+                <Settings className="w-5 h-5" />
               </Button>
               
               <Button
@@ -120,55 +113,44 @@ function Navbar() {
             </div>
           </div>
           
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center space-x-2">
-            {/* Mobile Accessibility Toggle */}
+          <div className="md:hidden flex items-center">
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => setAccessibilityOpen(true)}
-              className="flex items-center space-x-1 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+              className="mr-2"
               aria-label="Open accessibility settings"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-5 h-5" />
             </Button>
             
             <button 
               onClick={() => setMenuOpen(!menuOpen)}
-              className="focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg p-1"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
             >
-              {menuOpen ? (
-                <X className="h-6 w-6 text-foreground" />
-              ) : (
-                <Menu className="h-6 w-6 text-foreground" />
-              )}
+              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </nav>
         
-        {/* Mobile Menu */}
         {menuOpen && (
           <div className="md:hidden" id="mobile-menu">
-            <ul className="flex flex-col space-y-4 px-8 py-4" role="menu">
+            <ul className="flex flex-col items-start gap-4 p-4">
               {navigation.map((item) => (
-                <li key={item.name} role="none">
+                <li key={item.name}>
                   <Link
                     href={item.href || ""}
-                    className="text-base leading-normal hover:text-accent-500 font-normal hover:text-[#620074] 
-                   hover:font-medium hover:transition-all hover:ease-in-out hover:duration-300 
-                   focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 rounded-lg px-2 py-1 block"
-                   role="menuitem"
-                   onClick={() => setMenuOpen(false)}
+                    className="text-sm font-medium hover:underline underline-offset-4"
+                    onClick={() => setMenuOpen(false)}
                   >
                     {item.name}
                   </Link>
                 </li>
               ))}
             </ul>
-            <div className="flex flex-col space-y-4 px-8 py-4">
+            <div className="flex flex-col space-y-4 px-8 py-4 border-t">
               <Button
                 className="bg-white text-[#620074] border-[#620074] border-2 rounded-full
                hover:text-white hover:transition-all hover:duration-300 hover:delay-100 hover:bg-[#620074]
@@ -187,9 +169,8 @@ function Navbar() {
             </div>
           </div>
         )}
-      </div>
+      </header>
       
-      {/* Accessibility Panel */}
       <AccessibilityPanel
         isOpen={accessibilityOpen}
         onClose={() => setAccessibilityOpen(false)}

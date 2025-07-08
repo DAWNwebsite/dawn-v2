@@ -75,6 +75,7 @@ func main() {
 	routers.SetupStudentRoutes(r, db)
 	routers.SetupCourseRoutes(r, db)
 	routers.SetupTeacherRoutes(r, db)
+	routers.SetupAssessmentRoutes(r, db)
 
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {

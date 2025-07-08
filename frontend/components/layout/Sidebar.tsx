@@ -32,27 +32,33 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     name: "Knowledge Base",
-    href: "/knowledge-base",
+    href: "/dashboard/knowledge-base",
     icon: Search,
     description: "AI-powered educational resources"
   },
   {
     name: "Assessments",
-    href: "/assessments",
+    href: "/dashboard/assessments",
     icon: BarChart3,
     description: "Diagnostic and learning assessments"
   },
   {
     name: "Learning Modules",
-    href: "/learning",
+    href: "/dashboard/learning",
     icon: GraduationCap,
     description: "Adaptive learning content"
   },
   {
     name: "Messages",
-    href: "/messages",
+    href: "/dashboard/messages",
     icon: MessageSquare,
     description: "Communication center"
+  },
+  {
+    name: "AIDA",
+    href: "/dashboard/aida",
+    icon: MessageSquare,
+    description: "AI-powered diagnostic assistant"
   },
   {
     name: "Settings",
