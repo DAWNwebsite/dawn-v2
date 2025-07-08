@@ -2,9 +2,10 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/button";
 import AccessibilityPanel from "./accessibility/accessibility-panel";
-import { Settings, Menu, X } from "lucide-react";
+import { Settings, Menu, X, UserCircle, LogOut } from "lucide-react";
 import { useTheme } from "./providers/theme-provider";
 
 const navigation = [
@@ -46,37 +47,36 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accessibilityOpen, setAccessibilityOpen] = useState(false);
   const { theme } = useTheme();
+  const { data: session } = useSession();
 
   return (
     <>
-      <header className="bg-background sticky top-0 z-50 w-full border-b">
+      <header className="bg-white sticky top-0 z-50 w-full border-b border-gray-200">
         <nav 
-          className="container flex items-center justify-between h-16 px-4 md:px-6"
+          className="container flex items-center justify-between h-20 px-4 md:px-6"
           role="navigation"
           aria-label="Main navigation"
         >
           <Link
-            className="flex items-center gap-2"
             href="/"
             aria-label="DAWN AI Study - Home"
           >
             <Image
-              className=""
               src={process.env.NEXT_PUBLIC_DAWN_LOGO || "/images/logo.jpg"}
               alt="Dawn AI Study Logo"
-              width={128}
+              width={100}
               height={28}
               priority
             />
           </Link>
           
-          <div className="hidden md:flex items-center gap-4">
-            <ul className="flex items-center gap-4" role="menubar">
+          <div className="hidden md:flex items-center gap-6">
+            <ul className="flex items-center gap-6" role="menubar">
               {navigation.map((item) => (
                 <li key={item.name} role="none">
                   <Link
-                    href={item.href || ""}
-                    className="text-sm font-medium hover:underline underline-offset-4"
+                    href={item.href}
+                    className="text-sm font-medium text-gray-600 hover:text-purple-700 transition-colors"
                     role="menuitem"
                   >
                     {item.name}
@@ -92,24 +92,43 @@ function Navbar() {
                 onClick={() => setAccessibilityOpen(true)}
                 aria-label="Open accessibility settings"
               >
-                <Settings className="w-5 h-5" />
+                <Settings className="w-5 h-5 text-gray-600" />
               </Button>
               
-              <Button
-                className="bg-white text-[#620074] border-[#620074] border-2 rounded-full hover:text-white
-                hover:transition-all hover:ease-in-out hover:duration-300 hover:delay-100 hover:bg-[#620074]
-                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-                asChild
-              >
-                <Link href="/auth/signin">Login</Link>
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
-                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-                asChild
-              >
-                <Link href="/auth/signup">Join For Free</Link>
-              </Button>
+              {session ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button variant="ghost" className="flex items-center gap-2">
+                      <UserCircle className="w-5 h-5" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={() => signOut()}
+                    variant="outline"
+                    className="border-purple-600 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    className="rounded-full border-purple-700 text-purple-700 hover:bg-purple-50 hover:text-purple-700 px-6"
+                    asChild
+                  >
+                    <Link href="/auth/signin">Login</Link>
+                  </Button>
+                  <Button
+                    className="bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full px-6"
+                    asChild
+                  >
+                    <Link href="/auth/signup">Join For Free</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
           
@@ -136,13 +155,13 @@ function Navbar() {
         </nav>
         
         {menuOpen && (
-          <div className="md:hidden" id="mobile-menu">
+          <div className="md:hidden bg-white" id="mobile-menu">
             <ul className="flex flex-col items-start gap-4 p-4">
               {navigation.map((item) => (
                 <li key={item.name}>
                   <Link
-                    href={item.href || ""}
-                    className="text-sm font-medium hover:underline underline-offset-4"
+                    href={item.href}
+                    className="block w-full text-left text-gray-700 hover:bg-gray-100 p-2 rounded"
                     onClick={() => setMenuOpen(false)}
                   >
                     {item.name}
@@ -150,22 +169,37 @@ function Navbar() {
                 </li>
               ))}
             </ul>
-            <div className="flex flex-col space-y-4 px-8 py-4 border-t">
-              <Button
-                className="bg-white text-[#620074] border-[#620074] border-2 rounded-full
-               hover:text-white hover:transition-all hover:duration-300 hover:delay-100 hover:bg-[#620074]
-               focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-               asChild
-              >
-                <Link href="/auth/signin">Login</Link>
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-[#620074] to-[#FF6A6A] rounded-full
-                focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
-                asChild
-              >
-                <Link href="/auth/signup">Join For Free</Link>
-              </Button>
+            <div className="flex flex-col space-y-2 p-4 border-t">
+              {session ? (
+                <>
+                  <Link href="/dashboard" className="w-full">
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <UserCircle className="w-5 h-5" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={() => {
+                      signOut();
+                      setMenuOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/auth/signin">Login</Link>
+                  </Button>
+                  <Button asChild className="w-full">
+                    <Link href="/auth/signup">Join For Free</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
