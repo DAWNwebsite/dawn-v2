@@ -6,9 +6,9 @@ import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 
 const myCoursesData = [
-    { title: 'The Principles and Truth of Photography', progress: 35, image: '/images/student.jpg' },
-    { title: 'The Principles and Truth of Photography', progress: 35, image: '/images/student.jpg' },
-    { title: 'The Principles and Truth of Photography', progress: 0, image: '/images/student.jpg', recommended: true },
+    { title: 'The Principles and Truth of Photography', progress: 35, image: '/images/book.png' },
+    { title: 'Advanced Mathematics', progress: 75, image: '/images/circle.png' },
+    { title: 'Introduction to AI', progress: 0, image: '/images/arr.png', recommended: true },
 ];
 
 export function MyCourses() {

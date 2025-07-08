@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Image from "next/image";
 
 const courses = [
-  { title: 'Principles of Mathematics', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/student.jpg' },
-  { title: 'Biology of Fish', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/student.jpg' },
-  { title: 'Biological Systems', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/student.jpg' },
-  { title: 'Principles of Economics', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/student.jpg' },
+  { title: 'Principles of Mathematics', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/circle.png' },
+  { title: 'Biology of Fish', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/book.png' },
+  { title: 'Biological Systems', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/arr.png' },
+  { title: 'Principles of Economics', lessons: 15, hours: 15, price: '15,000 NGN', image: '/images/contact.png' },
 ];
 
 export function NewCourses() {

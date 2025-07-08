@@ -364,12 +364,21 @@ export function DyslexiaAssessment({ userId, onComplete }: DyslexiaAssessmentPro
       </FocusCard>
 
       {error && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center">
-            <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-            <span className="text-red-700">
-              <DyslexiaText>{error}</DyslexiaText>
-            </span>
+        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-red-500" aria-hidden="true" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                <DyslexiaText>Assessment Error</DyslexiaText>
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>
+                  <DyslexiaText>{error}</DyslexiaText>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
