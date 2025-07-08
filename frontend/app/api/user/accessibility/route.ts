@@ -32,15 +32,14 @@ export async function GET(request: NextRequest) {
       const defaultPreferences = await prisma.accessibilityPreferences.create({
         data: {
           userId: session.user.id,
-          fontSize: 'medium',
-          theme: 'light',
-          highContrast: false,
-          reducedMotion: false,
-          screenReader: false,
-          keyboardNavigation: false,
-          focusIndicator: true,
-          textToSpeech: false,
-          closedCaptions: false
+          fontSize: 16,
+          contrastMode: 'default',
+          enableTextToSpeech: false,
+          prefersReducedMotion: false,
+          colorBlindnessSupport: 'none',
+          keyboardNavigation: true,
+          screenReaderOptimized: false,
+          focusIndicatorStyle: 'default',
         },
         include: {
           user: {
@@ -96,8 +95,17 @@ export async function PUT(request: NextRequest) {
       closedCaptions
     } = body;
 
+    // Convert font size string to integer
+    const fontSizeMap: { [key: string]: number } = {
+      small: 14,
+      medium: 16,
+      large: 18,
+      'extra-large': 20,
+    };
+    const fontSizeInt = fontSize ? fontSizeMap[fontSize] : undefined;
+
     // Validate input data
-    if (fontSize && !['small', 'medium', 'large', 'extra-large'].includes(fontSize)) {
+    if (fontSize && !fontSizeInt) {
       return NextResponse.json(
         { error: 'Invalid font size' },
         { status: 400 }
@@ -113,7 +121,7 @@ export async function PUT(request: NextRequest) {
 
     // Prepare update data - only include fields that are provided
     const updateData: any = {};
-    if (fontSize !== undefined) updateData.fontSize = fontSize;
+    if (fontSizeInt !== undefined) updateData.fontSize = fontSizeInt;
     if (theme !== undefined) updateData.theme = theme;
     if (highContrast !== undefined) updateData.highContrast = highContrast;
     if (reducedMotion !== undefined) updateData.reducedMotion = reducedMotion;
@@ -129,15 +137,14 @@ export async function PUT(request: NextRequest) {
       update: updateData,
       create: {
         userId: session.user.id,
-        fontSize: fontSize || 'medium',
-        theme: theme || 'light',
-        highContrast: highContrast || false,
-        reducedMotion: reducedMotion || false,
-        screenReader: screenReader || false,
-        keyboardNavigation: keyboardNavigation || false,
-        focusIndicator: focusIndicator !== undefined ? focusIndicator : true,
-        textToSpeech: textToSpeech || false,
-        closedCaptions: closedCaptions || false
+        fontSize: fontSizeInt || 16,
+        contrastMode: 'default',
+        enableTextToSpeech: false,
+        prefersReducedMotion: false,
+        colorBlindnessSupport: 'none',
+        keyboardNavigation: true,
+        screenReaderOptimized: false,
+        focusIndicatorStyle: 'default',
       },
       include: {
         user: {

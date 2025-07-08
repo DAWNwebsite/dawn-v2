@@ -37,7 +37,20 @@ export async function GET(request: NextRequest) {
           learningStyle: 'visual',
           difficultyLevel: 'beginner',
           preferredSubjects: [],
-          accommodations: []
+          accommodations: [],
+          subjectStrengthsWeaknesses: {},
+          preferredPace: 'medium',
+          attentionSpanMinutes: 25,
+          preferredTimeOfDay: 'morning',
+          breakFrequencyMinutes: 10,
+          multitaskingPreference: false,
+          sensoryProcessingNotes: '',
+          communicationPreferences: 'visual',
+          executiveFunctionSupport: false,
+          preferredRewardSystem: 'badges',
+          interestAreas: '',
+          feedbackStyle: 'direct',
+          assessmentFormat: 'multiple_choice',
         },
         include: {
           user: {
@@ -123,7 +136,20 @@ export async function PUT(request: NextRequest) {
         learningStyle: learningStyle || 'visual',
         difficultyLevel: difficultyLevel || 'beginner',
         preferredSubjects: preferredSubjects || [],
-        accommodations: accommodations || []
+        accommodations: accommodations || [],
+        subjectStrengthsWeaknesses: {},
+        preferredPace: 'medium',
+        attentionSpanMinutes: 25,
+        preferredTimeOfDay: 'morning',
+        breakFrequencyMinutes: 10,
+        multitaskingPreference: false,
+        sensoryProcessingNotes: '',
+        communicationPreferences: 'visual',
+        executiveFunctionSupport: false,
+        preferredRewardSystem: 'badges',
+        interestAreas: '',
+        feedbackStyle: 'direct',
+        assessmentFormat: 'multiple_choice',
       },
       include: {
         user: {
