@@ -1,29 +1,28 @@
-import { StreamingTextResponse, LangChainAdapter } from 'ai';
-import { ChatOpenAI } from '@langchain/openai';
-import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import { OpenAIStream, StreamingTextResponse } from 'ai'
+import OpenAI from 'openai'
 
-export const runtime = 'edge';
+// Optional, but recommended: run on the edge runtime.
+// See https://vercel.com/docs/concepts/functions/edge-functions
+export const runtime = 'edge'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+})
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  // Extract the `messages` from the body of the request
+  const { messages } = await req.json()
 
-  // This is a placeholder for your actual AI agent service call.
-  // We are using a simple LangChain model here for demonstration.
-  // In a real implementation, you would replace this with a `fetch`
-  // call to your AI agent's endpoint.
-  const model = new ChatOpenAI({
-    temperature: 0.7,
-    modelName: 'gpt-3.5-turbo',
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  });
+  // Request the OpenAI API for the response based on the prompt
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    stream: true,
+    messages,
+  })
 
-  const stream = await model.stream(
-    messages.map((message: any) =>
-      message.role === 'user'
-        ? new HumanMessage(message.content)
-        : new AIMessage(message.content)
-    )
-  );
+  // Convert the response into a friendly text-stream
+  const stream = OpenAIStream(response)
 
-  return new StreamingTextResponse(LangChainAdapter.toAIStream(stream));
+  // Respond with the stream
+  return new StreamingTextResponse(stream)
 } 

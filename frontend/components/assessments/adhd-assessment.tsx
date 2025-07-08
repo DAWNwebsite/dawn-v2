@@ -142,7 +142,7 @@ interface ADHDAssessmentProps {
   onComplete?: (result: DiagnosticResult) => void
 }
 
-export default function ADHDAssessment({ userId, onComplete }: ADHDAssessmentProps) {
+export function AdhdAssessment({ userId, onComplete }: ADHDAssessmentProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [responses, setResponses] = useState<Record<string, number>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -156,18 +156,18 @@ export default function ADHDAssessment({ userId, onComplete }: ADHDAssessmentPro
   const canProceed = responses[currentQuestion.id] !== undefined
 
   const handleResponse = (questionId: string, value: number) => {
-    setResponses(prev => ({ ...prev, [questionId]: value }))
+    setResponses((prev: Record<string, number>) => ({ ...prev, [questionId]: value }))
   }
 
   const nextQuestion = () => {
     if (currentQuestionIndex < adhdQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
+      setCurrentQuestionIndex((prev: number) => prev + 1)
     }
   }
 
   const previousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1)
+      setCurrentQuestionIndex((prev: number) => prev - 1)
     }
   }
 

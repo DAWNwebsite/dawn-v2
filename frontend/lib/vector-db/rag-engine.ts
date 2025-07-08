@@ -13,7 +13,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { formatDocumentsAsString } from "langchain/util/document";
 import { Document } from "langchain/document";
-import { pinecone } from './pinecone';
+import { pineconeClient } from './pinecone';
 import { ChatGroq } from "@langchain/groq";
 
 export type UserContext = {
@@ -61,7 +61,7 @@ export class RAGSearchEngine {
    */
   private async initializeVectorStore() {
     try {
-      const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
+      const pineconeIndex = pineconeClient.Index(process.env.PINECONE_INDEX!);
       this.vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
         pineconeIndex,
       });

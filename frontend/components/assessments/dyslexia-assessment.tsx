@@ -77,7 +77,7 @@ interface DyslexiaAssessmentProps {
   onComplete?: (result: DiagnosticResult) => void
 }
 
-export default function DyslexiaAssessment({ userId, onComplete }: DyslexiaAssessmentProps) {
+export function DyslexiaAssessment({ userId, onComplete }: DyslexiaAssessmentProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [responses, setResponses] = useState<Record<string, number | string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -93,7 +93,7 @@ export default function DyslexiaAssessment({ userId, onComplete }: DyslexiaAsses
   const canProceed = responses[currentQuestion.id] !== undefined
 
   const handleResponse = (questionId: string, value: number | string) => {
-    setResponses(prev => ({ ...prev, [questionId]: value }))
+    setResponses((prev: Record<string, number | string>) => ({ ...prev, [questionId]: value }))
   }
 
   const startReadingTest = () => {
@@ -106,7 +106,7 @@ export default function DyslexiaAssessment({ userId, onComplete }: DyslexiaAsses
       const wordCount = currentQuestion.content?.split(' ').length || 0
       const wordsPerMinute = Math.round((wordCount / duration) * 60)
       
-      setResponses(prev => ({ ...prev, [currentQuestion.id]: wordsPerMinute }))
+      setResponses((prev: Record<string, number | string>) => ({ ...prev, [currentQuestion.id]: wordsPerMinute }))
       setReadingCompleted(true)
       setReadingStartTime(null)
     }
@@ -114,14 +114,14 @@ export default function DyslexiaAssessment({ userId, onComplete }: DyslexiaAsses
 
   const nextQuestion = () => {
     if (currentQuestionIndex < dyslexiaQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
+      setCurrentQuestionIndex((prev: number) => prev + 1)
       setReadingCompleted(false)
     }
   }
 
   const previousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1)
+      setCurrentQuestionIndex((prev: number) => prev - 1)
       setReadingCompleted(false)
     }
   }
