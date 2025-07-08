@@ -1,7 +1,5 @@
-import { StreamingTextResponse } from 'ai';
 import { ChatGroq } from '@langchain/groq';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
-import { BytesOutputParser } from '@langchain/core/output_parsers';
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
@@ -15,7 +13,6 @@ export async function POST(req: Request) {
   });
 
   const stream = await groq
-    .pipe(new BytesOutputParser())
     .stream(
       messages.map((m: any) =>
         m.role === 'user'
@@ -24,5 +21,7 @@ export async function POST(req: Request) {
       )
     );
 
-  return new StreamingTextResponse(stream);
+  return new Response(stream, {
+    headers: { 'Content-Type': 'application/octet-stream' }
+  });
 } 

@@ -1,4 +1,4 @@
-import { StreamingTextResponse, LangChainAdapter } from 'ai';
+import { LangChainAdapter } from 'ai';
 import { ChatOpenAI } from '@langchain/openai';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
 
@@ -23,5 +23,9 @@ export async function POST(req: Request) {
     )
   );
 
-  return new StreamingTextResponse(LangChainAdapter.toAIStream(stream));
+  const dataStream = LangChainAdapter.toDataStream(stream);
+
+  return new Response(dataStream, {
+    headers: { 'Content-Type': 'application/octet-stream' },
+  });
 }
