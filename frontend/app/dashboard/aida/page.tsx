@@ -1,9 +1,14 @@
-import AidaChat from '@/components/aida/AidaChat';
+'use client';
+
+import { AidaChat } from '@/components/dashboard/unified/AidaChat';
 
 export default function AidaPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1 className="text-4xl font-bold mb-8">AIDA Chatbot</h1>
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-3xl font-bold">AIDA</h1>
+        <p className="text-muted-foreground">Your personal AI assistant.</p>
+      </header>
       <AidaChat />
     </div>
   );
