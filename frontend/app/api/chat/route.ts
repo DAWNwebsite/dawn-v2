@@ -1,28 +1,28 @@
-import { OpenAIStream, StreamingTextResponse } from 'ai'
-import OpenAI from 'openai'
+import { StreamingTextResponse } from 'ai';
+import { ChatGroq } from '@langchain/groq';
+import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import { BytesOutputParser } from '@langchain/core/output_parsers';
 
-// Optional, but recommended: run on the edge runtime.
-// See https://vercel.com/docs/concepts/functions/edge-functions
-export const runtime = 'edge'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-})
+// IMPORTANT! Set the runtime to edge
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
-  // Extract the `messages` from the body of the request
-  const { messages } = await req.json()
+  const { messages } = await req.json();
 
-  // Request the OpenAI API for the response based on the prompt
-  const response = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    stream: true,
-    messages,
-  })
+  const groq = new ChatGroq({
+    apiKey: process.env.GROQ_API_KEY,
+    model: "llama3-8b-8192", 
+  });
 
-  // Convert the response into a friendly text-stream
-  const stream = OpenAIStream(response)
+  const stream = await groq
+    .pipe(new BytesOutputParser())
+    .stream(
+      messages.map((m: any) =>
+        m.role === 'user'
+          ? new HumanMessage(m.content)
+          : new AIMessage(m.content)
+      )
+    );
 
-  // Respond with the stream
-  return new StreamingTextResponse(stream)
+  return new StreamingTextResponse(stream);
 } 

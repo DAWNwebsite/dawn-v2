@@ -23,7 +23,7 @@ export function AidaChat() {
   return (
     <Card className="h-[calc(100vh-12rem)] flex flex-col">
       <CardContent ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg: { id: string; role: 'user' | 'assistant'; content: string }) => (
+        {messages.map((msg) => (
           <div key={msg.id} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'assistant' && <Bot className="h-6 w-6 text-purple-600 flex-shrink-0" />}
             <div className={`rounded-lg p-3 max-w-xs lg:max-w-md ${
